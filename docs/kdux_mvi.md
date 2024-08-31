@@ -36,8 +36,8 @@ leveraging Kdux to manage the underlying application state. Here’s how it work
 
 ```plaintext
 +-----------------+                   +-----------------+                               
-|     View        |                   |     View        |                               
-| (User Action)   |                   | (Update UI)     |                               
+|     View        |                   |      View       |                               
+| (User Intent)   |                   |   (Update UI)   |                               
 +--------+--------+                   +-----------------+                               
          V                                    ^                
          v                                    ^
@@ -55,7 +55,7 @@ leveraging Kdux to manage the underlying application state. Here’s how it work
          v                            | Store emits new |  
 +-----------------+                   |      State      |  
 |  Dispatch to    |                   +--------+--------+   
-|  Kdux Store     |                            ^
+|   Kdux Store    |                            ^
 +--------+--------+                            ^
          v                                     ^                  
          v                                     ^                  
