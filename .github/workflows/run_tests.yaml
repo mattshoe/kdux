@@ -1,0 +1,50 @@
+name: Run All Tests
+run-name: Test Suite for PR#${{ github.event.pull_request.number }} by ${{ github.actor }}
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+      - "feature/*"
+      - "release/*"
+      - "hotfix/*"
+      - "bugfix/*"
+      - "fix/*"
+
+jobs:
+  run-all-tests:
+    runs-on: ubuntu-latest
+
+    concurrency: run-tests-${{ github.event.pull_request.number }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'oracle'
+
+      - name: Run tests
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 30
+          max_attempts: 3
+          command: ./gradlew clean test
+
+      - name: Test Results for Kernl.Annotations
+        if: always() 
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kernl.Annotations Test Results
+          path: Kernl.Annotations/build/reports/tests/test/**
+
+      - name: Test Results
+        if: always() 
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kernl.Common Test Results
+          path: build/reports/tests/test/**

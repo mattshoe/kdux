@@ -1,0 +1,104 @@
+name: Publish Release
+run-name: Release Publication for commit '${{ github.sha }}' by ${{ github.actor }}
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    permissions:
+      contents: write
+      actions: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        id: checkout_code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup JDK
+        id: setup_jdk
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'oracle'
+
+      - name: Extract version from gradle.properties
+        id: get_version
+        run: |
+          version=$(grep '^version=' gradle.properties | cut -d'=' -f2)
+          echo "VERSION=$version" >> $GITHUB_ENV
+
+      - name: Check if tag exists
+        id: tag_check
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
+          TAG_VERSION="v${{ env.VERSION }}"
+          echo "Tag version: $TAG_VERSION"
+          TAG=$(git tag -l "$TAG_VERSION")
+          echo "Captured Tag: $TAG"
+          if [ -n "$TAG" ]; then
+            echo "Tag v${{ env.VERSION }} already exists. Failing the build."
+            exit 1
+          else
+            echo "Tag v${{ env.VERSION }} does not exist. Continuing."
+          fi
+
+      - name: Generate Artifacts
+        id: generate_artifacts
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+        run: |
+          ./ci/zip.sh
+
+      - name: Tag the Commit
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git tag -a "v${{ env.VERSION }}" -m "Release version ${{ env.VERSION }}"
+          git push origin "v${{ env.VERSION }}"
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ env.VERSION }}
+          release_name: ${{ env.VERSION }}
+          body: | 
+            [Maven Central Repository](https://central.sonatype.com/artifact/org.mattshoe.shoebox/Kdux/versions)
+          draft: false
+          prerelease: false
+
+      - name: Upload Assets
+        id: upload_github_release_assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: build/distributions/kdux_artifacts_${{ env.VERSION }}.zip
+          asset_name: stratify_artifacts_${{ env.VERSION }}.zip
+          asset_content_type: application/zip
+
+      - name: Publish to Nexus OSSRH for Maven Central
+        id: publish_kdux
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+          GPG_SIGNING_PASSPHRASE: ${{ secrets.GPG_SIGNING_PASSPHRASE }}
+        run: |
+          ./gradlew publish
+
