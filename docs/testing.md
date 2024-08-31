@@ -6,8 +6,8 @@
   intend it to.
 - **Make Use of Integration Tests:** Since Kdux is designed to handle state management in a holistic way, it’s
   beneficial to incorporate integration tests that cover the entire flow, from action dispatching to state updates.
-- **Coroutine Testing Tools:** Given that Kdux uses coroutines and flows, utilize tools like runTest and Turbine to
-  effectively manage coroutine execution and flow testing.
+- **Coroutine Testing Tools:** Given that Kdux uses coroutines and flows, utilize tools like [runTest](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-test/kotlinx.coroutines.test/run-test.html)
+  and [Turbine](https://github.com/cashapp/turbine) to effectively manage coroutine execution and flow testing.
 
 ### Testing Reducers
 
