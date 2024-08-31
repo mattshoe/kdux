@@ -247,6 +247,7 @@ Kdux is designed to be highly flexible and extensible. This documents below will
 middleware, enhancers, and custom store creators to build complex state management solutions that cater to your
 specific needs.
 
+- [Integrating Kdux with MVI](docs/kdux_mvi.md)
 - [Middleware](docs/middleware.md)
 - [Enhancer](docs/enhancer.md)
 - [Store](docs/store.md)
