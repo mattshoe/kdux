@@ -153,7 +153,14 @@ interface Store<State : Any, Action : Any> {
     val state: Flow<State>
 
     /**
-     * The raw value of the current state of the Store.
+     * The current state of the store. This property provides direct access to the most recent state
+     * managed by the store without needing to collect the [state] flow. It represents the latest
+     * snapshot of the application's state.
+     *
+     * This is particularly useful when you need to access the state synchronously, without waiting for
+     * flow emissions. However, unlike the [state] flow, `currentState` does not notify observers of state changes.
+     *
+     * @return The most recent state of type [State] managed by the store.
      */
     val currentState: State
 
