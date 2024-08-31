@@ -17,7 +17,7 @@ MVI architecture.
     - [Middleware](docs/middleware.md)
     - [Enhancers](docs/enhancer.md)
     - [StoreCreator](docs/store_creator.md)
-- [Testing](#testing)
+- [Testing](docs/testing.md)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -248,7 +248,8 @@ Kdux is designed to be highly flexible and extensible. This documents below will
 middleware, enhancers, and custom store creators to build complex state management solutions that cater to your
 specific needs.
 
-- [Integrating Kdux with MVI](docs/kdux_mvi.md)
+- [Using Kdux with MVI](docs/kdux_mvi.md)
+- [Testing](docs/testing.md)
 - [Middleware](docs/middleware.md)
 - [Enhancer](docs/enhancer.md)
 - [Store](docs/store.md)
