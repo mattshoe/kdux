@@ -57,7 +57,7 @@ class CustomStoreCreator : StoreCreator<AppState, AppAction> {
             reducer = AppReducer()
         ) {
             // Add any middleware or enhancers here if needed
-            // Example: middleware(LoggingMiddleware())
+            // Example: add(LoggingMiddleware())
         }
     }
 }

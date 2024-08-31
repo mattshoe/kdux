@@ -34,7 +34,8 @@ MVI architecture.
 ## Why Kdux?
 
 Kdux is a Kotlin-based state management library that implements the Redux pattern, designed to offer a **predictable**,
-**deterministic**, and **centralized** way to manage application state across any Kotlin project. The Kdux pattern is particularly effective in
+**deterministic**, and **centralized** way to manage application state across any Kotlin project. The Kdux pattern is
+particularly effective in
 scenarios where state consistency, scalability, and traceability are critical, making it an ideal solution for complex
 applications, especially those using MVI (Model-View-Intent) architecture.
 
@@ -113,6 +114,12 @@ Benefits of Synchronous Dispatch and Structured Concurrency
   resources.
 - **Easier Testing:** The predictable nature of synchronous dispatch makes it easier to write tests for your state
   management logic, as you don’t need to account for the complexities of asynchronous action processing.
+
+#### tl;dr
+
+Kdux leverages the well-proven Redux pattern to provide a powerful, flexible, and scalable state management solution for
+Kotlin projects. By enforcing predictability, centralization, and testability, Kdux ensures that even the most complex
+applications can maintain a consistent and reliable state management strategy.
 
 ### Flow of Events in Kdux
 

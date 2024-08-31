@@ -80,8 +80,8 @@ val counterStore = kdux.store(
     initialState = CounterState(),
     reducer = CounterReducer()
 ) {
-    // middleware(PerformanceMonitorMiddleware())
-    // enhancers(DevToolsEnhancer())
+    // add(PerformanceMonitorMiddleware())
+    // add(DevToolsEnhancer())
 }
 
 // Store class by delegation
@@ -93,7 +93,7 @@ by kdux.store(
     initialState,
     reducer,
     {
-        middleware(LoggingMiddleware())
+        add(LoggingMiddleware())
     }
 )
 

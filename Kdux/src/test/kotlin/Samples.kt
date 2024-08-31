@@ -80,11 +80,11 @@ by store(
     SampleState.Success,
     reducer,
     {
-        middleware(
+        add(
             SampleMiddleware(),
             SampleMiddleware()
         )
-        enhancers(
+        add(
             SampleEnhancer(),
             SampleEnhancer()
         )

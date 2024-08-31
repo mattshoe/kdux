@@ -87,9 +87,11 @@ To implement a custom middleware, you must define the `apply` method, which acce
 ### Example: Async Middleware
 
 Here is an example of middleware that handles asynchronous operations, such as waiting for a network response before
-allowing the action to proceed:
+allowing the action to proceed. The example show 3 different ways you could construct your middleware, based on your 
+personal programming style and application conventions.
 
 ```kotlin
+// Option 1: Implement the interface
 class AsyncMiddleware<State : Any, Action : Any> : Middleware<State, Action> {
     override suspend fun apply(store: Store<State, Action>, action: Action, next: suspend (Action) -> Unit) {
         if (action is AsyncAction) {
@@ -102,6 +104,33 @@ class AsyncMiddleware<State : Any, Action : Any> : Middleware<State, Action> {
         }
     }
 }
+
+// Option 2: Use the DSL
+val asyncMiddleware = middleware { _, action, next ->
+    if (action is AsyncAction) {
+        // Perform the suspending operation
+        val result = action.executeAsync()
+        // Dispatch the result or pass it to the next middleware
+        next(result)
+    } else {
+        next(action) // Continue with normal actions
+    }
+}
+
+// Option 3: Delegate via DSL
+class AsyncMiddleware<State : Any, Action : Any> : Middleware<State, Action>
+by middleware(
+    { _, action, next ->
+        if (action is AsyncAction) {
+            // Perform the suspending operation
+            val result = action.executeAsync()
+            // Dispatch the result or pass it to the next middleware
+            next(result)
+        } else {
+            next(action) // Continue with normal actions
+        }
+    } 
+) 
 ```
 
 This example middleware checks if the dispatched action is of type AsyncAction. If it is, it waits for the asynchronous

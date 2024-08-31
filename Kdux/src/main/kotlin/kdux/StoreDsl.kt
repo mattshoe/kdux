@@ -51,7 +51,7 @@ class StoreDslMenu<State: Any, Action: Any>(
      *
      * @param middleware Vararg of middleware to be added to the store.
      */
-    fun middleware(vararg middleware: Middleware<State, Action>) {
+    fun add(vararg middleware: Middleware<State, Action>) {
         builder.add(*middleware)
     }
 
@@ -62,7 +62,7 @@ class StoreDslMenu<State: Any, Action: Any>(
      *
      * @param enhancers Vararg of enhancers to be added to the store.
      */
-    fun enhancers(vararg enhancers: Enhancer<State, Action>) {
+    fun add(vararg enhancers: Enhancer<State, Action>) {
         builder.add(*enhancers)
     }
 
@@ -75,5 +75,59 @@ class StoreDslMenu<State: Any, Action: Any>(
      */
     fun creator(creator: StoreCreator<State, Action>) {
         builder.storeCreator(creator)
+    }
+}
+
+/**
+ * A DSL utility that creates a [Middleware] from a given function. This allows you to define
+ * middleware logic inline without needing to create a separate class.
+ *
+ * The middleware function intercepts actions as they are dispatched to the store, allowing you to
+ * perform side effects, modify the action, or block the action from reaching the reducer.
+ *
+ * @param function A suspend function that takes three parameters:
+ * - [store]: The [Store] instance managing the state and actions.
+ * - [action]: The action being dispatched.
+ * - [next]: A suspend function representing the next middleware or reducer in the chain. Calling `next(action)` passes the action to the next stage.
+ *
+ * @return A [Middleware] instance that applies the provided function to intercept and process actions.
+ */
+fun <State: Any, Action: Any> middleware(
+    function: suspend (
+        store: Store<State, Action>,
+        action: Action,
+        next: suspend (Action
+        ) -> Unit
+    ) -> Unit
+): Middleware<State, Action> {
+    return object : Middleware<State, Action> {
+        override suspend fun apply(
+            store: Store<State, Action>,
+            action: Action,
+            next: suspend (Action) -> Unit
+        ) {
+            function.invoke(store, action, next)
+        }
+    }
+}
+
+/**
+ * A DSL utility that creates an [Enhancer] from a given function. This allows you to define
+ * enhancer logic inline without needing to create a separate class.
+ *
+ * The enhancer function modifies the behavior of the store by wrapping it with additional functionality.
+ * This can include altering how actions are dispatched, adding new methods, or modifying how the state is accessed.
+ *
+ * @param function A function that takes a [Store] as a parameter and returns a modified [Store].
+ *
+ * @return An [Enhancer] instance that applies the provided function to modify or extend the store's behavior.
+ */
+fun <State: Any, Action: Any> enhancer(
+    function: (store: Store<State, Action>) -> Store<State, Action>
+): Enhancer<State, Action> {
+    return object : Enhancer<State, Action> {
+        override fun enhance(store: Store<State, Action>): Store<State, Action> {
+            return function.invoke(store)
+        }
     }
 }
