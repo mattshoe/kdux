@@ -49,12 +49,12 @@ leveraging Kdux to manage the underlying application state. Here’s how it work
          v                            +--------+--------+  
 +-----------------+                            ^           
 |  Map Intent to  |                            ^
-|    Action       |                            ^
+|   Kdux Action   |                            ^
 +--------+--------+                            ^
          v                            +-----------------+  
          v                            | Store emits new |  
 +-----------------+                   |      State      |  
-|  Dispatch to    |                   +--------+--------+   
+|   Dispatch to   |                   +--------+--------+   
 |   Kdux Store    |                            ^
 +--------+--------+                            ^
          v                                     ^                  
