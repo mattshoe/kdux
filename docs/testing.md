@@ -1,9 +1,5 @@
 ## Testing
 
-Kdux is designed with testability in mind, offering robust tools to ensure that your state management logic behaves as
-expected. Whether you're testing reducers, middleware, or the entire store, Kdux supports integration-style testing,
-which allows you to verify the complete flow of state changes in your application.
-
 ### Best Practices for Testing with Kdux
 
 - **Don't Neglect Unit Tests:** Unit testing Reducers and Middleware is essential to ensure your code works the way you
