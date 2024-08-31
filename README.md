@@ -12,6 +12,7 @@ MVI architecture.
 - [Getting Started](#getting-started)
     - [Installation](#installation)
     - [Basic Usage](#basic-usage)
+- [Kdux and MVI](docs/kdux_mvi.md)
 - [Advanced Usage](#advanced-usage)
     - [Middleware](docs/middleware.md)
     - [Enhancers](docs/enhancer.md)
