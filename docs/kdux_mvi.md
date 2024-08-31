@@ -35,34 +35,34 @@ leveraging Kdux to manage the underlying application state. Here’s how it work
 ### Detailed Interaction Flow
 
 ```plaintext
-+-----------------+                   +-----------------+                               
-|     View        |                   |      View       |                               
-| (User Intent)   |                   |   (Update UI)   |                               
-+--------+--------+                   +-----------------+                               
-         V                                    ^                
++-----------------+                   +-----------------+ 
+|     View        |                   |      View       | 
+| (User Intent)   |                   |   (Update UI)   | 
++--------+--------+                   +-----------------+ 
+         V                                    ^           
          v                                    ^
 +-----------------+                           ^
-|   ViewModel     |                   +-----------------+  
-|  handleIntent() |                   |    ViewModel    |    
-+--------+--------+                   | Maps Kdux State |            
-         v                            |   to UiState    |  
-         v                            +--------+--------+  
-+-----------------+                            ^           
+|   ViewModel     |                   +-----------------+ 
+|  handleIntent() |                   |    ViewModel    | 
++--------+--------+                   | Maps Kdux State | 
+         v                            |   to UiState    | 
+         v                            +--------+--------+ 
++-----------------+                            ^          
 |  Map Intent to  |                            ^
 |   Kdux Action   |                            ^
 +--------+--------+                            ^
-         v                            +-----------------+  
-         v                            | Store emits new |  
-+-----------------+                   |      State      |  
-|   Dispatch to   |                   +--------+--------+   
+         v                            +-----------------+ 
+         v                            | Store emits new | 
++-----------------+                   |      State      | 
+|   Dispatch to   |                   +--------+--------+ 
 |   Kdux Store    |                            ^
 +--------+--------+                            ^
-         v                                     ^                  
-         v                                     ^                  
-+-----------------+                   +-----------------+           
+         v                                     ^          
+         v                                     ^          
++-----------------+                   +-----------------+ 
 |   Kdux Store    |  >>>>>>>>>>>>>>   |   Kdux Store    | 
-| (Process Action)|                   | (Update State)  |           
-+--------+--------+                   +--------+--------+           
+| (Process Action)|                   | (Update State)  | 
++--------+--------+                   +--------+--------+ 
 ```
 
 ### Justification for this Approach
