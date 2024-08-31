@@ -174,7 +174,7 @@ To add Kdux to your project, include the following in your `build.gradle.kts` (f
 
 ```kotlin
 dependencies {
-    implementation("com.example:kdux:1.0.1")
+    implementation("com.example:kdux:1.0.2")
 }
 ```
 
