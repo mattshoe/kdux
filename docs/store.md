@@ -1,6 +1,6 @@
 # Store in Kdux
 
-The `Store` interface represents the core of a Redux-like state management system in Kdux. A `Store` holds the state,
+The `Store`represents the core of a Redux-like state management system. A `Store` holds the state,
 allows state transitions by dispatching actions, and provides a way to observe state changes over time.
 
 ## Purpose of the Store
@@ -10,7 +10,7 @@ centralized container. By using the store, the state becomes:
 
 - **Predictable**: State transitions only occur in response to actions dispatched through the store, ensuring that all
   state changes are intentional and controlled.
-- **Observable**: The store exposes the state as a `StateFlow`, allowing reactive components to observe and react to
+- **Observable**: The store exposes the state as a `Flow`, allowing reactive components to observe and react to
   state changes in a consistent and efficient manner.
 - **Centralized**: All state transitions are handled by a single entity (the store), which makes it easier to reason
   about the application's behavior, debug issues, and track state changes over time.
@@ -22,7 +22,7 @@ centralized container. By using the store, the state becomes:
 - **Dispatch Actions**: The store accepts actions, which represent events or commands in the application. These actions
   are processed by middleware (if present) and then sent to the reducer, which determines how the state should change in
   response to the action.
-- **Observe State Changes**: The store exposes the current state as a `StateFlow`. External components can collect this
+- **Observe State Changes**: The store exposes the current state as a `Flow`. External components can collect this
   flow to observe state changes and automatically update themselves when the state changes.
 
 ## Store Lifecycle
@@ -37,7 +37,7 @@ The lifecycle of the store revolves around the continuous cycle of actions being
    dispatched action.
 4. **State Update**: Once the reducer returns the new state, the store updates its internal state and emits the new
    state to any collectors of the `StateFlow`.
-5. **State Observation**: Reactive components that are collecting the `StateFlow` receive the new state and update
+5. **State Observation**: Reactive components that are collecting the `Flow` receive the new state and update
    accordingly.
 
 ## Example Use Case
@@ -119,7 +119,7 @@ traceable.
 
 ## Observing State Changes
 
-The state is exposed as a `StateFlow`, which is a reactive data stream that components can collect. When the state
+The state is exposed as a `Flow`, which is a reactive data stream that components can collect. When the state
 changes, the flow automatically emits the new state to all collectors. This makes the store an ideal tool for building
 reactive user interfaces where components automatically update themselves in response to state changes.
 
