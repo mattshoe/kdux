@@ -9,6 +9,36 @@
 - **Coroutine Testing Tools:** Given that Kdux uses coroutines and flows, utilize tools like [runTest](https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-test/kotlinx.coroutines.test/run-test.html)
   and [Turbine](https://github.com/cashapp/turbine) to effectively manage coroutine execution and flow testing.
 
+#### Testing with Coroutines and Flows
+
+Kdux leverages Kotlin coroutines and flows for state management. When testing these asynchronous components, tools like
+Turbine make it easy to verify the behavior of your flows.
+
+**Example:**
+
+```kotlin
+class StoreFlowTest {
+
+    @Test
+    fun `WHEN action is dispatched THEN state flow emits correct values`() = runTest {
+        val store = store(
+            initialState = CounterState(count = 0),
+            reducer = CounterReducer()
+        )
+
+        store.state.test {
+            // initial value
+            assdertThat(awaitItem().count).isEqualto(0)
+            store.dispatch(CounterAction.Increment)
+            assertThat(awaitItem().count).isEqualTo(1)
+
+            store.dispatch(CounterAction.Decrement)
+            assertThat(awaitItem().count).isEqualTo(0)
+        }
+    }
+}
+```
+
 ### Testing Reducers
 
 Reducers are pure functions that take the current state and an action, then return a new state. This predictability
@@ -109,36 +139,6 @@ class StoreTest {
           store.dispatch(CounterAction.Decrement)
           assertThat(awaitItem().count).isEqualTo(0)
             
-        }
-    }
-}
-```
-
-#### Testing with Coroutines and Flows
-
-Kdux leverages Kotlin coroutines and flows for state management. When testing these asynchronous components, tools like
-Turbine make it easy to verify the behavior of your flows.
-
-**Example:**
-
-```kotlin
-class StoreFlowTest {
-
-    @Test
-    fun `WHEN action is dispatched THEN state flow emits correct values`() = runTest {
-        val store = store(
-            initialState = CounterState(count = 0),
-            reducer = CounterReducer()
-        )
-
-        store.state.test {
-            // initial value
-            assdertThat(awaitItem().count).isEqualto(0)
-            store.dispatch(CounterAction.Increment)
-            assertThat(awaitItem().count).isEqualTo(1)
-
-            store.dispatch(CounterAction.Decrement)
-            assertThat(awaitItem().count).isEqualTo(0)
         }
     }
 }
