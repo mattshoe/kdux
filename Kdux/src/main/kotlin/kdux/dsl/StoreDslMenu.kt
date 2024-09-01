@@ -25,6 +25,16 @@ class StoreDslMenu<State: Any, Action: Any>(
     )
 
     /**
+     * Give this store a name. This is useful for debugging or reporting purposes.
+     *
+     * For example, the global performance monitors will see this value. It may also come in handy during debugging
+     * sessions.
+     */
+    fun name(value: String) {
+        builder.storeName(value)
+    }
+
+    /**
      * Adds middleware to the store configuration.
      *
      * Middleware can intercept actions before they reach the reducer, enabling tasks such as logging, side effects, or modifying actions.
@@ -113,7 +123,7 @@ class StoreDslMenu<State: Any, Action: Any>(
     }
 
     /**
-     * Adds a []DebounceEnhancer] to the store's builder, which debounces actions based on the specified duration.
+     * Adds a [DebounceEnhancer] to the store's builder, which debounces actions based on the specified duration.
      * This means that actions will only be dispatched if the specified amount of time has passed since the last dispatched action.
      * If actions are dispatched more frequently than the debounce duration, only the first action in the burst will be processed.
      *
@@ -127,5 +137,14 @@ class StoreDslMenu<State: Any, Action: Any>(
      */
     fun debounce(duration: Duration) {
         builder.add(DebounceEnhancer(duration))
+    }
+
+    /**
+     * Adds a `GuardEnhancer` to the store, which blocks actions that fail the [isAuthorized] check.
+     *
+     * @param isAuthorized A suspend function that returns `true` if the action should be dispatched, or `false` if it should be blocked.
+     */
+    fun guard(isAuthorized: suspend (Action) -> Boolean) {
+        builder.add(GuardEnhancer(isAuthorized))
     }
 }

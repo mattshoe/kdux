@@ -29,14 +29,57 @@ fun <State: Any, Action: Any> store(
         .apply(configuration)
         .builder
         .apply {
-            KduxGlobal.loggers.forEach {
-                add(LoggingEnhancer(it))
+            if (KduxMenu.loggers.isNotEmpty()) {
+                add(
+                    LoggingEnhancer { action ->
+                        KduxMenu.loggers.forEach { log ->
+                            log(action)
+                        }
+                    }
+                )
             }
-            KduxGlobal.performanceMonitors.forEach {
-                add(PerformanceEnhancer(it))
+            if (KduxMenu.performanceMonitors.isNotEmpty()) {
+                add(
+                    PerformanceEnhancer { data ->
+                        KduxMenu.performanceMonitors.forEach { monitor ->
+                            monitor(data)
+                        }
+                    }
+                )
+            }
+            if (KduxMenu.globalGuards.isNotEmpty()) {
+                add(
+                    GuardEnhancer { action ->
+                        KduxMenu.globalGuards.all { it(action) }
+                    }
+                )
             }
         }
         .build()
+}
+
+/**
+ * A DSL utility that creates a [Reducer] from a given function. This allows you to define reducer logic
+ * without needing to create a separate class.
+ *
+ * The reducer function is responsible for taking the current state and an action, and then returning a new
+ * state based on the action. Reducers should be pure functions, meaning they do not cause side effects
+ * and always produce the same output given the same inputs.
+ *
+ * @param State The type representing the state managed by the reducer.
+ * @param Action The type representing the actions that can be dispatched to the store.
+ * @param function A suspend function that takes the current state and an action, and returns the new state.
+ *
+ * @return A [Reducer] instance that applies the provided function to reduce the state.
+ */
+fun <State: Any, Action: Any> reducer(
+    function: suspend (state: State, action: Action) -> State
+): Reducer<State, Action> {
+    return object : Reducer<State, Action> {
+        override suspend fun reduce(state: State, action: Action): State {
+            return function(state, action)
+        }
+    }
 }
 
 

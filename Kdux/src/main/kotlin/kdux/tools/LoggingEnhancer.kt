@@ -16,7 +16,7 @@ import org.mattshoe.shoebox.kdux.Store
  * @param log A suspendable function that takes an `Action` as a parameter and logs it.
  *            The logging function is called every time an action is dispatched.
  */
-class LoggingEnhancer<State: Any, Action: Any>(
+open class LoggingEnhancer<State: Any, Action: Any>(
     private val log: suspend (Action) -> Unit
 ): Enhancer<State, Action> {
 

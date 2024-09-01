@@ -20,7 +20,7 @@ import org.mattshoe.shoebox.kdux.Store
  *
  * @throws IllegalArgumentException if `bufferSize` is less than or equal to zero.
  */
-class BufferEnhancer<State: Any, Action: Any>(
+open class BufferEnhancer<State: Any, Action: Any>(
     private val bufferSize: Int
 ): Enhancer<State, Action> {
     init {

@@ -23,7 +23,7 @@ import kotlin.time.TimeSource
  *                      Once this duration is exceeded, the batch of actions is dispatched at the
  *                      next call to dispatch.
  */
-class BatchEnhancer<State: Any, Action: Any>(
+open class BatchEnhancer<State: Any, Action: Any>(
     private val batchDuration: Duration
 ): Enhancer<State, Action> {
 

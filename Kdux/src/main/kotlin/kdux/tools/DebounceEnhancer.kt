@@ -28,7 +28,7 @@ private val LONG_TIME_FROM_NOW = 10.days
  *
  * @throws IllegalArgumentException if `duration` is less than or equal to zero.
  */
-class DebounceEnhancer<State: Any, Action: Any>(
+open class DebounceEnhancer<State: Any, Action: Any>(
     private val duration: Duration
 ): Enhancer<State, Action> {
 

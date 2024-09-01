@@ -49,7 +49,7 @@ val myStore = kdux.store(
     reducer = MyReducer()
 ) {
     monitorPerformance { 
-        println("Store: ${it.storeName}, Action: ${it.action}, Duration: ${it.dispatchDuration}")
+        println("Store: ${it.storeName}, Action: ${it.action}, Duration: ${it.duration}")
     }
 }
 ```

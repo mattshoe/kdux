@@ -258,6 +258,7 @@ specific needs.
 ### Tools
 
 - [LoggingEnhancer](docs/logging_enhancer.md)
+- [GuardEnhancer](docs/guard_enhancer.md)
 - [PerformanceEnhancer](docs/performance_enhancer.md)
 - [BufferEnhancer](docs/buffer_enhancer.md)
 - [DebounceEnhancer](docs/debounce_enhancer.md)

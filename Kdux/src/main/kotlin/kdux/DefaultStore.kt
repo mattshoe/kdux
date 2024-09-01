@@ -15,11 +15,14 @@ import kotlinx.coroutines.flow.*
  * @property middlewares A list of middlewares that intercept and process the actions before they reach the reducer.
  */
 internal class DefaultStore<State: Any, Action: Any>(
+    customName: String? = null,
     private val initialState: State,
     private val reducer: Reducer<State, Action>,
     private val middlewares: List<Middleware<State, Action>> = emptyList()
 ) : Store<State, Action> {
     private val _state = MutableStateFlow(initialState)
+
+    override val name = customName ?: super.toString()
 
     override val state: Flow<State> = _state.asStateFlow()
     override val currentState: State
@@ -27,6 +30,10 @@ internal class DefaultStore<State: Any, Action: Any>(
 
     override suspend fun dispatch(action: Action) {
         processMiddleware(0, action)
+    }
+
+    override fun toString(): String {
+        return name
     }
 
     /**

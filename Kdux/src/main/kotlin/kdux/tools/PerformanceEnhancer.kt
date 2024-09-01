@@ -19,7 +19,7 @@ import kotlin.time.measureTime
  *            The logging function is called every time an action is dispatched, with
  *            the duration of the dispatch process.
  */
-class PerformanceEnhancer<State: Any, Action: Any>(
+open class PerformanceEnhancer<State: Any, Action: Any>(
     private val log: suspend (PerformanceData<Action>) -> Unit
 ): Enhancer<State, Action> {
     override fun enhance(store: Store<State, Action>): Store<State, Action> {
@@ -49,10 +49,10 @@ class PerformanceEnhancer<State: Any, Action: Any>(
  *
  * @param storeName The name of the store where the action was dispatched.
  * @param action The action that was dispatched
- * @param dispatchDuration The time duration it took to dispatch and process the action.
+ * @param duration The time duration it took to dispatch and process the action.
  */
 data class PerformanceData<Action: Any> internal constructor(
     val storeName: String,
     val action: Action,
-    val dispatchDuration: Duration
+    val duration: Duration
 )

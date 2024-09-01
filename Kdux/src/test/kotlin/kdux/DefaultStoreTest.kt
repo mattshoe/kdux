@@ -25,10 +25,24 @@ class DefaultStoreIntegrationTest {
 
     @Before
     fun setup() {
-        store = DefaultStore(initialState = 0, reducer = SimpleReducer())
+        store = DefaultStore(null, initialState = 0, reducer = SimpleReducer())
     }
 
     // region Routine Tests
+
+    @Test
+    fun `WHEN name is set THEN value is respected`() {
+        store = DefaultStore("my name", initialState = 0, reducer = SimpleReducer())
+
+        assertThat(store.name).isEqualTo("my name")
+    }
+
+    @Test
+    fun `WHEN name is set THEN toString reflects the value`() {
+        store = DefaultStore("my name", initialState = 0, reducer = SimpleReducer())
+
+        assertThat(store.toString()).isEqualTo("my name")
+    }
 
     @Test
     fun `WHEN store is initialized THEN state should be 0`() = runTest(dispatcher) {

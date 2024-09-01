@@ -22,6 +22,11 @@ internal class StoreBuilder<State: Any, Action: Any>(
     private val enhancers = mutableListOf<Enhancer<State, Action>>()
     private var storeCreatorLambda: (() -> Store<State, Action>)? = null
     private var storeCreator: StoreCreator<State, Action>? = null
+    private var storeName: String? = null
+
+    fun storeName(value: String) {
+        storeName = value
+    }
 
     /**
      * Adds a middleware to the builder, allowing it to be included in the store's processing pipeline.
@@ -103,6 +108,7 @@ internal class StoreBuilder<State: Any, Action: Any>(
         var store = storeCreator?.createStore()
             ?: this.storeCreatorLambda?.invoke()
             ?: DefaultStore(
+                storeName,
                 initialState,
                 reducer,
                 middlewares

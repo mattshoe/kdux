@@ -57,7 +57,7 @@ class PerformanceEnhancerTest {
             val loggedData = loggedPerformanceData.first()
             assertThat(loggedData.storeName).isNotEmpty() // Assuming store name is not empty
             assertThat(loggedData.action).isEqualTo(TestAction.Increment)
-            assertThat(loggedData.dispatchDuration).isGreaterThan(Duration.ZERO)
+            assertThat(loggedData.duration).isGreaterThan(Duration.ZERO)
 
             assertThat(awaitItem()).isEqualTo(1)
         }
@@ -72,7 +72,7 @@ class PerformanceEnhancerTest {
         loggedPerformanceData.forEach { loggedData ->
             assertThat(loggedData.storeName).isNotEmpty()
             assertThat(loggedData.action).isEqualTo(TestAction.Increment)
-            assertThat(loggedData.dispatchDuration).isGreaterThan(Duration.ZERO)
+            assertThat(loggedData.duration).isGreaterThan(Duration.ZERO)
         }
 
         store.state.test {
