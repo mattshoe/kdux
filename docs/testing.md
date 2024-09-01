@@ -22,14 +22,14 @@ class CounterReducerTest {
     private val reducer = CounterReducer()
 
     @Test
-    fun `WHEN Increment action is dispatched THEN state count is incremented`() {
+    fun `WHEN Increment action is dispatched THEN state count is incremented`() = runTest {
         val initialState = CounterState(count = 0)
         val newState = reducer.reduce(initialState, CounterAction.Increment)
         assertThat(newState.count).isEqualTo(1)
     }
 
     @Test
-    fun `WHEN Decrement action is dispatched THEN state count is decremented`() {
+    fun `WHEN Decrement action is dispatched THEN state count is decremented`() = runTest {
         val initialState = CounterState(count = 1)
         val newState = reducer.reduce(initialState, CounterAction.Decrement)
         assertThat(newState.count).isEqualTo(0)
@@ -39,7 +39,7 @@ class CounterReducerTest {
 
 ### Testing Middleware
 
-Middleware can modify actions, handle side effects, or even block actions from reaching the reducer. When testing
+Middleware can modify actions, handle side effects, even block actions or dispatch new ones. When testing
 middleware, focus on verifying that the correct actions are intercepted and any side effects (like logging or API calls)
 are performed.
 
@@ -52,12 +52,14 @@ class LoggingMiddlewareTest {
 
     @Test
     fun `WHEN action is dispatched THEN it is logged correctly`() = runTest {
-        val store = TestStore(initialState = CounterState(count = 0))
+        val store: Store<counterState, CounterAction> = mockk()
+        var nextWasInvoked = false
         middleware.apply(store, CounterAction.Increment) { action ->
-            store.dispatch(action)
+            nextWasInvoked = true
         }
 
         assertThat(middleware.log).containsExactly("Logging: Increment")
+        assertThat(nextWasInvoked).isTrue()
     }
 }
 ```
@@ -78,10 +80,16 @@ class StoreTest {
             initialState = CounterState(count = 0),
             reducer = CounterReducer()
         )
+      
+        store.test {
+            // initial state
+            assertThat(awaitItem()).isEqualTo(0)
+          
+            store.dispatch(CounterAction.Increment)
+  
+            assertThat(awaitItem().count).isEqualTo(1)
+        }
 
-        store.dispatch(CounterAction.Increment)
-
-        assertThat(store.state.first().count).isEqualTo(1)
     }
 
     @Test
@@ -90,11 +98,18 @@ class StoreTest {
             initialState = CounterState(count = 0),
             reducer = CounterReducer()
         )
+      
+        store.test {
+          // initial state
+          assertThat(awaitItem()).isEqualTo(0)
 
-        store.dispatch(CounterAction.Increment)
-        store.dispatch(CounterAction.Decrement)
-
-        assertThat(store.state.first().count).isEqualTo(0)
+          store.dispatch(CounterAction.Increment)
+          assertThat(awaitItem().count).isEqualTo(1)
+          
+          store.dispatch(CounterAction.Decrement)
+          assertThat(awaitItem().count).isEqualTo(0)
+            
+        }
     }
 }
 ```
@@ -138,53 +153,32 @@ with the added functionality.
 **Example:**
 
 ```kotlin
-class ActionBatchingEnhancerTest {
+class BufferEnhancerTest {
 
     @Test
-    fun `WHEN actions are batched THEN state is updated after all actions are processed`() = runTest {
+    fun `WHEN actions are buffered THEN state is updated after all buffer is filled`() = runTest {
         val store = store(
             initialState = CounterState(count = 0),
             reducer = CounterReducer()
         ) {
-            enhancers(ActionBatchingEnhancer())
+            buffer(size = 3)
         }
 
-        // Start batching actions
-        store.startBatching()
+        store.test {
+            // Initial state
+            assertThat(awaitItem().count).isEqualTo(0)
 
-        // Dispatch multiple actions
-        store.dispatch(CounterAction.Increment)
-        store.dispatch(CounterAction.Increment)
-        store.dispatch(CounterAction.Decrement)
-
-        // End batching and apply all actions
-        store.endBatching()
-
-        // Check final state after batching
-        assertThat(store.state.first().count).isEqualTo(1)
-    }
-
-    @Test
-    fun `WHEN no actions are batched THEN state is updated after each action`() = runTest {
-        val store = store(
-            initialState = CounterState(count = 0),
-            reducer = CounterReducer()
-        ) {
-            enhancers(ActionBatchingEnhancer())
+            // Dispatch multiple actions
+            store.dispatch(CounterAction.Increment)
+            expectNoEvents()
+            store.dispatch(CounterAction.Increment)
+            expectNoEvents()
+            store.dispatch(CounterAction.Decrement)
+    
+            // Check final state after batching
+            assertThat(awaitItem().count).isEqualTo(1)
+            
         }
-
-        // Dispatch actions without batching
-        store.dispatch(CounterAction.Increment)
-        assertThat(store.state.first().count).isEqualTo(1)
-
-        store.dispatch(CounterAction.Decrement)
-        assertThat(store.state.first().count).isEqualTo(0)
     }
 }
 ```
-
-### Summary
-
-Testing with Kdux is designed to be straightforward and robust, ensuring that your state management logic is reliable,
-predictable, and easy to validate. By following these guidelines, you can confidently write tests that cover all aspects
-of your state management, from individual reducers to the entire application flow.
