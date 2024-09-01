@@ -1,4 +1,11 @@
-package org.mattshoe.shoebox.kdux
+package kdux
+
+import kdux.dsl.StoreDslMenu
+import kdux.tools.*
+import org.mattshoe.shoebox.kdux.Enhancer
+import org.mattshoe.shoebox.kdux.Middleware
+import org.mattshoe.shoebox.kdux.Reducer
+import org.mattshoe.shoebox.kdux.Store
 
 /**
  * Creates and configures a [Store] using a DSL.
@@ -21,62 +28,17 @@ fun <State: Any, Action: Any> store(
     return StoreDslMenu(initialState, reducer)
         .apply(configuration)
         .builder
+        .apply {
+            KduxGlobal.loggers.forEach {
+                add(LoggingEnhancer(it))
+            }
+            KduxGlobal.performanceMonitors.forEach {
+                add(PerformanceEnhancer(it))
+            }
+        }
         .build()
 }
 
-
-/**
- * A DSL menu for configuring a [Store] with middleware, enhancers, and custom store creators.
- *
- * @param State The type representing the state managed by the store.
- * @param Action The type representing the actions that can be dispatched to the store.
- * @property builder The internal builder used to construct the store.
- * @constructor Creates a [StoreDslMenu] with the specified initial state and reducer.
- * @param initialState The initial state of the store.
- * @param reducer The reducer that handles actions and updates the state.
- */
-class StoreDslMenu<State: Any, Action: Any>(
-    initialState: State,
-    reducer: Reducer<State, Action>
-) {
-    internal val builder = StoreBuilder(
-        initialState,
-        reducer
-    )
-
-    /**
-     * Adds middleware to the store configuration.
-     *
-     * Middleware can intercept actions before they reach the reducer, enabling tasks such as logging, side effects, or modifying actions.
-     *
-     * @param middleware Vararg of middleware to be added to the store.
-     */
-    fun add(vararg middleware: Middleware<State, Action>) {
-        builder.add(*middleware)
-    }
-
-    /**
-     * Adds enhancers to the store configuration.
-     *
-     * Enhancers can modify or extend the store's behavior, such as adding functionality or altering how the store processes actions.
-     *
-     * @param enhancers Vararg of enhancers to be added to the store.
-     */
-    fun add(vararg enhancers: Enhancer<State, Action>) {
-        builder.add(*enhancers)
-    }
-
-    /**
-     * Sets a custom store creator for the store.
-     *
-     * The store creator is responsible for creating the final store instance, allowing customization of how the store is built.
-     *
-     * @param creator The custom store creator to be used for building the store.
-     */
-    fun creator(creator: StoreCreator<State, Action>) {
-        builder.storeCreator(creator)
-    }
-}
 
 /**
  * A DSL utility that creates a [Middleware] from a given function. This allows you to define

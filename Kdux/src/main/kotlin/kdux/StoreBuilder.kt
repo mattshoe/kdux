@@ -14,7 +14,7 @@ package org.mattshoe.shoebox.kdux
  * @param initialState The initial state that the store will start with.
  * @param reducer The reducer that will handle state transitions based on dispatched actions.
  */
-class StoreBuilder<State: Any, Action: Any>(
+internal class StoreBuilder<State: Any, Action: Any>(
     private val initialState: State,
     private val reducer: Reducer<State, Action>
 ) {

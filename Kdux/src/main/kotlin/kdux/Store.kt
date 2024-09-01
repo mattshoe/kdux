@@ -142,6 +142,8 @@ import kotlinx.coroutines.flow.StateFlow
  *    that happened or should happen in the application. It must be a non-nullable type (`Any`).
  */
 interface Store<State : Any, Action : Any> {
+    val name: String
+        get() = this::class.simpleName.toString()
     /**
      * The stream providing the current state of the store, exposed as a [StateFlow]. This flow is reactive, meaning that it can be
      * collected by external components to observe state changes over time. Every time the state is updated as a
@@ -177,7 +179,7 @@ interface Store<State : Any, Action : Any> {
     suspend fun dispatch(action: Action)
 
     companion object {
-        fun <State : Any, Action : Any> Builder(
+        internal fun <State : Any, Action : Any> Builder(
             initialState: State,
             reducer: Reducer<State, Action>
         ): StoreBuilder<State, Action> {

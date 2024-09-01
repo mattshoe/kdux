@@ -255,4 +255,11 @@ specific needs.
 - [Store](docs/store.md)
 - [StoreCreator](docs/store_creator.md)
 
+### Tools
+
+- [LoggingEnhancer](docs/logging_enhancer.md)
+- [PerformanceEnhancer](docs/performance_enhancer.md)
+- [BufferEnhancer](docs/buffer_enhancer.md)
+- [DebounceEnhancer](docs/debounce_enhancer.md)
+- [BatchEnhancer](docs/batch_enhancer.md)
 
