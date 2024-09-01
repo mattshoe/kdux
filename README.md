@@ -1,17 +1,30 @@
-# Kdux
+# **Kdux**
 
-**Kdux** is a Kotlin-based state management library that brings the power of the Redux pattern to any Kotlin project.
-With built-in coroutine support, Kdux is designed to integrate seamlessly with structured concurrency, making it an
-ideal choice for modern Kotlin applications. The Redux pattern is particularly well-suited to integrate with Android's
-MVI architecture.
+**Kdux** is a state management library that takes a more modern and practical approach to the Redux pattern. **Kdux** is
+optimized to take advantage of all the great features modern Kotlin has to offer. With a custom DSL and built-in
+coroutines support, you get all the benefits of Kotlin's dsl support and structured concurrency.
+
+**Kdux** takes a new approach to the Redux pattern by moving away from the monolithic architecture of a Global State
+used by traditional Redux, and by enforcing sequential-by-default behavior of dispatches. This strongly enforces Structured
+Concurrency in your state management while drastically reducing race conditions and making state transitions truly
+deterministic.
+
+The **Kdux** pattern is particularly well-suited to integrate with Android's MVI architecture. **Kdux** and **MVI** are
+both "action-driven" architectures, and so it works wonderfully to help segregate concerns between your view, business,
+and data layers. Check out this [much more in depth discussion on the benefits here](docs/kdux_mvi.md).
+
+In an Android application, monolithic state become unwieldy very quickly. So by taking a modularized approach to State,
+we can more easily manage the limited available memory and recover from process death or configuration changes without 
+worrying about exceeding memory limits due to enormous state objects.
 
 ## Table of Contents
 
-- [Why Kdux?](#what-is-kdux)
+- [Why **Kdux**?](#what-is-kdux)
+- [The **Kdux** Pattern](#the-kdux-pattern)
 - [Getting Started](#getting-started)
     - [Installation](#installation)
     - [Basic Usage](#basic-usage)
-- [Kdux and MVI](docs/kdux_mvi.md)
+- [**Kdux** and MVI](docs/kdux_mvi.md)
 - [DSL Guide](docs/dsl.md)
 - [Advanced Usage](#advanced-usage)
     - [Middleware](docs/middleware.md)
@@ -22,46 +35,45 @@ MVI architecture.
 
 ## Features
 
-- **Platform-Agnostic**: Kdux supports any Kotlin project, whether it's mobile, server-side, or any other Kotlin
-  environment.
-- **Structured Concurrency**: Built-in support for coroutines ensures that Kdux aligns with Kotlin's structured
+- **Expressive DSL**: **Kdux** provides an expressive and flexible DSL that can be used to build tooling.
+- **Structured Concurrency**: Built-in support for coroutines ensures that **Kdux** aligns with Kotlin's structured
   concurrency model.
 - **Flexible Architecture**: Users have complete control over how they define state, actions, reducers, middleware, and
   enhancers.
-- **Integration with MVI**: Kdux is particularly well-suited for use in Android applications using MVI (
-  Model-View-Intent) architecture.
+- **Integration with MVI**: **Kdux** is particularly well-suited for use in Android applications using MVI (Model-View-Intent) architecture.
 
-## Why Kdux?
+## Why **Kdux**?
 
-Kdux is a Kotlin-based state management library that implements the Redux pattern, designed to offer a **predictable**,
-**deterministic**, and **centralized** way to manage application state across any Kotlin project. The Kdux pattern is
-particularly effective in
-scenarios where state consistency, scalability, and traceability are critical, making it an ideal solution for complex
+**Kdux** is a Kotlin-based state management library that implements the Redux pattern, designed to offer a **predictable**,
+**deterministic**, and **centralized** way to manage application state across any Kotlin project. The **Kdux** pattern
+is particularly effective in scenarios where state consistency, scalability, and traceability are critical, making it an ideal solution for complex
 applications, especially those using MVI (Model-View-Intent) architecture.
 
-### The Kdux Pattern
+### The **Kdux** Pattern
 
-At the heart of Kdux is the Redux pattern, a well-established approach to managing state in a predictable and traceable
-manner. The pattern revolves around three core principles:
+At the heart of **Kdux** is the Redux pattern, a well-established approach to managing state in a predictable and
+traceable manner. The pattern revolves around three core principles:
 
 1. **Single Source of Truth:** Your state is stored in a single object, which ensures consistency and provides a clear
    and accessible snapshot of the application at any point in time.
-2. **State is Read-Only:** The state cannot be modified directly. Instead, actions are dispatched to indicate the intent
+2. **Segregated State:** You application should group related states into the same `Store`, to avoid enormous and unwieldy state objects. States should only be as large as they are cohesive. Meaning you should group all related State together, but not unrelated states. 
+3. **State is Read-Only:** The state cannot be modified directly. Instead, actions are dispatched to indicate the intent
    to change the state. This ensures that all state transitions are explicit, traceable, and follow a predictable flow.
-3. **Changes are Made with Pure Functions:** Reducers are pure functions that take the current state and an action as
+4. **Changes are Made with Pure Functions:** Reducers are pure functions that take the current state and an action as
    input, and return a new state. This guarantees that the state transitions are predictable and easy to test.
 
-### How Kdux Differs from Traditional Redux
+#### How **Kdux** Differs from Traditional Redux
 
-While Kdux is heavily inspired by the traditional Redux pattern, it introduces several key differences and enhancements
+While **Kdux** is heavily inspired by the traditional Redux pattern, it introduces several key differences and
+enhancements
 tailored specifically for Kotlin applications, particularly in environments like Android where proper resource
 management
-and memory usage are critical, and process death can occur at any time. Below are some of the things that set Kdux
+and memory usage are critical, and process death can occur at any time. Below are some of the things that set **Kdux**
 apart.
 
 #### Segregated State Management
 
-Unlike traditional Redux, where the entire application’s state is typically centralized in a single store, Kdux
+Unlike traditional Redux, where the entire application’s state is typically centralized in a single store, **Kdux**
 encourages the segregation of state into logical chunks, each managed by its own store. This allows you to create
 multiple stores, each responsible for a distinct part of your application’s state. For example, you may have an app that
 segregates state into something along the lines of:
@@ -75,7 +87,7 @@ This segregation is particularly beneficial in Android applications, where memor
 application state can be inefficient. By dividing the state into smaller, more manageable chunks, each store can be
 optimized independently, reducing the overhead associated with serializing and deserializing large state objects.
 
-Advantages of Segregated State Management
+#### Advantages of Segregated State Management
 
 - **Improved Performance:** By managing smaller, focused state objects, you reduce the memory footprint and the
   computational cost associated with state updates.
@@ -89,17 +101,19 @@ Advantages of Segregated State Management
 
 #### Synchronous Dispatch and Structured Concurrency
 
-Another key difference in Kdux is how it handles the dispatch operation. In traditional Redux, dispatching actions is
+Another key difference in **Kdux** is how it handles the dispatch operation. In traditional Redux, dispatching actions
+is
 often asynchronous, which can introduce complexities around managing race conditions and ensuring that state updates
 occur in a predictable order.
 
-Kdux, however, adheres to Kotlin’s structured concurrency model. In Kdux:
+**Kdux**, however, adheres to Kotlin’s structured concurrency model. In **Kdux**:
 
 - **Synchronous Dispatch by Default:** Dispatch operations are not asynchronous by default. When an action is
   dispatched, it is processed sequentially and predictably within the current coroutine context. This synchronous
   behavior ensures that each action is fully processed before the next one begins, eliminating race conditions and
   making state transitions more predictable.
-- **Structured Concurrency:** Kdux leverages Kotlin’s structured concurrency to ensure that all state transitions and
+- **Structured Concurrency:** **Kdux** leverages Kotlin’s structured concurrency to ensure that all state transitions
+  and
   side effects are managed within a defined scope. This means that dispatch operations are always predictable and occur
   within the bounds of the coroutine scope in which they are executed, simplifying resource management and reducing the
   likelihood of memory leaks or orphaned coroutines.
@@ -113,17 +127,19 @@ Benefits of Synchronous Dispatch and Structured Concurrency
   contained within the same coroutine scope, reducing the risk of resource leaks and making it easier to manage system
   resources.
 - **Easier Testing:** The predictable nature of synchronous dispatch makes it easier to write tests for your state
-  management logic, as you don’t need to account for the complexities of asynchronous action processing.
+  management logic, as you can much more easily account for the complexities of asynchronous action processing.
 
 #### tl;dr
 
-Kdux enhances the well-proven Redux pattern with a few tweaks to provide a powerful, flexible, and scalable state management solution for
-Kotlin projects. By enforcing predictability, centralization, and testability, Kdux ensures that even the most complex
+**Kdux** enhances the well-proven Redux pattern with a few tweaks to provide a powerful, flexible, and scalable state
+management solution for
+Kotlin projects. By enforcing predictability, centralization, and testability, **Kdux** ensures that even the most
+complex
 applications can maintain a consistent and reliable state management strategy.
 
-### Flow of Events in Kdux
+### Flow of Events in **Kdux**
 
-The flow of events in Kdux follows a clear and structured path, ensuring that every state change is intentional and
+The flow of events in **Kdux** follows a clear and structured path, ensuring that every state change is intentional and
 controlled. Here’s how the flow works:
 
 ```
@@ -169,7 +185,7 @@ controlled. Here’s how the flow works:
 
 ### Installation
 
-To add Kdux to your project, include the following in your `build.gradle.kts` (for Kotlin DSL):
+To add **Kdux** to your project, include the following in your `build.gradle.kts` (for Kotlin DSL):
 
 ```kotlin
 dependencies {
@@ -206,7 +222,8 @@ Here’s a simple example to get you started:
     }
    ```
 
-4. Define your store. This is done using the Kdux DSL. This allows you to delegate to a class, or store it in a property
+4. Define your store. This is done using the **Kdux** DSL. This allows you to delegate to a class, or store it in a
+   property
    with the same ease.
     ```kotlin
     // Option 1: Create a Store variable with DSL
@@ -243,12 +260,12 @@ Here’s a simple example to get you started:
 
 ## Advanced Usage
 
-Kdux is designed to be highly flexible and extensible. This documents below will dive deep into how you can leverage
+**Kdux** is designed to be highly flexible and extensible. This documents below will dive deep into how you can leverage
 middleware, enhancers, and custom store creators to build complex state management solutions that cater to your
 specific needs.
 
 - [DSL Guide](docs/dsl.md)
-- [Using Kdux with MVI](docs/kdux_mvi.md)
+- [Using **Kdux** with MVI](docs/kdux_mvi.md)
 - [Testing](docs/testing.md)
 - [Middleware](docs/middleware.md)
 - [Enhancer](docs/enhancer.md)
