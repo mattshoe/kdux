@@ -194,7 +194,7 @@ controlled. Here’s how the flow works:
 
 ### Installation
 
-To add **Kdux** to your project, include the following in your `build.gradle.kts` (for Kotlin DSL):
+Add the dependency for **Kdux** to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
@@ -204,7 +204,7 @@ dependencies {
 
 ## Usage
 
-Here’s a simple example to get you started:
+Here's a simple example of a `Store` that just manages a "Counter" to track a value:
 
 1. Define the State your store will be operating on
     ```kotlin
@@ -220,7 +220,7 @@ Here’s a simple example to get you started:
    ```
 3. Define the store's reducer. A reducer simply modifies the `State` given an `Action`
     ```kotlin
-    // Define your Reducer
+    // Option 1: Define your Reducer as a class (recommended)
     class CounterReducer : Reducer<CounterState, CounterAction> {
         override suspend fun reduce(state: CounterState, action: CounterAction): CounterState {
             return when (action) {
@@ -229,19 +229,21 @@ Here’s a simple example to get you started:
             }
         }
     }
+   
+   // Option 2: Define your reducer inline
+   val reducer = kdux.reducer { state, action ->
+        when (action) {
+            is CounterAction.Increment -> state.copy(count = state.count + 1)
+            is CounterAction.Decrement -> state.copy(count = state.count - 1)
+        }
+   }
    ```
 
 4. Define your store. This is done using the **Kdux** DSL. This allows you to delegate to a class, or store it in a
    property
    with the same ease.
     ```kotlin
-    // Option 1: Create a Store variable with DSL
-    val counterStore = kdux.store(
-            initialState = CounterState(0),
-            reducer = CounterReducer()
-        )
-    
-    // Option 2: Create a Store class by delegation using DSL
+    // Option 1: Create a Store class by delegation using DSL (recommended)
     class CounterStore(
         initialState: CounterState = CounterState(0),
         reducer: Reducer<CounterState, CounterAction> = CounterReducer()
@@ -250,6 +252,12 @@ Here’s a simple example to get you started:
             initialState, 
             reducer
         )
+   
+   // Option 2: Create a Store inline with the kdux DSL
+    val counterStore = kdux.store(
+        initialState = CounterState(0),
+        reducer = CounterReducer()
+    )
    ```
 
 5. Stream the store's state
