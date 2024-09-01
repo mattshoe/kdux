@@ -58,6 +58,9 @@ worrying about exceeding memory limits due to enormous state objects.
 is particularly effective in scenarios where state consistency, scalability, and traceability are critical, making it an ideal solution for complex
 applications, especially those using MVI (Model-View-Intent) architecture.
 
+<br>
+<br>
+
 ## The **Kdux** Pattern
 
 At the heart of **Kdux** is the Redux pattern, a well-established approach to managing state in a predictable and
