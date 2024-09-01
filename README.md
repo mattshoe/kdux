@@ -138,6 +138,11 @@ Benefits of Synchronous Dispatch and Structured Concurrency
 management solution for Kotlin projects. By enforcing predictability, centralization, and testability, **Kdux** ensures
 that even the most complex applications can maintain a consistent and reliable state management strategy.
 
+
+<br>
+<br>
+
+
 ### Flow of Events in **Kdux**
 
 The flow of events in **Kdux** follows a clear and structured path, ensuring that every state change is intentional and
