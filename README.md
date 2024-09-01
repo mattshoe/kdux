@@ -52,11 +52,11 @@ applications, especially those using MVI (Model-View-Intent) architecture.
 ### The **Kdux** Pattern
 
 At the heart of **Kdux** is the Redux pattern, a well-established approach to managing state in a predictable and
-traceable manner. The pattern revolves around three core principles:
+traceable manner. The **Kdux Pattern** revolves around three core principles:
 
 1. **Single Source of Truth:** Your state is stored in a single object, which ensures consistency and provides a clear
    and accessible snapshot of the application at any point in time.
-2. **Segregated State:** You application should group related states into the same `Store`, to avoid enormous and unwieldy state objects. States should only be as large as they are cohesive. Meaning you should group all related State together, but not unrelated states. 
+2. **Cohesive State:** You application should group only related state data into the same `Store`/`State`, to avoid enormous and unwieldy state objects and logic. States should only be as large as they are cohesive. Meaning you should group all related State together, but not unrelated states. 
 3. **State is Read-Only:** The state cannot be modified directly. Instead, actions are dispatched to indicate the intent
    to change the state. This ensures that all state transitions are explicit, traceable, and follow a predictable flow.
 4. **Changes are Made with Pure Functions:** Reducers are pure functions that take the current state and an action as
