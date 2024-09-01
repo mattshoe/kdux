@@ -52,7 +52,7 @@ applications, especially those using MVI (Model-View-Intent) architecture.
 ### The **Kdux** Pattern
 
 At the heart of **Kdux** is the Redux pattern, a well-established approach to managing state in a predictable and
-traceable manner. The **Kdux Pattern** revolves around three core principles:
+traceable manner. The **Kdux Pattern** revolves around four core principles:
 
 1. **Single Source of Truth:** Your state is stored in a single object, which ensures consistency and provides a clear
    and accessible snapshot of the application at any point in time.
