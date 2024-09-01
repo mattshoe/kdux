@@ -196,7 +196,7 @@ Add the dependency for **Kdux** to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("com.example:kdux:1.0.3")
+    implementation("com.example:kdux:1.0.4")
 }
 ```
 
