@@ -2,7 +2,7 @@
 
 **Kdux** is a state management library that takes a more modern and practical approach to the Redux pattern. **Kdux** is
 optimized to take advantage of all the great features modern Kotlin has to offer. With a custom DSL and built-in
-coroutines support, you get all the benefits of Kotlin's dsl support and structured concurrency.
+coroutines support, you get all the benefits of Kotlin.
 
 **Kdux** takes a new approach to the Redux pattern by moving away from the monolithic architecture of a Global State
 used by traditional Redux, and by enforcing sequential-by-default behavior of dispatches. This strongly enforces Structured
