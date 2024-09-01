@@ -7,7 +7,6 @@ MVI architecture.
 
 ## Table of Contents
 
-- [Features](#features)
 - [Why Kdux?](#what-is-kdux)
 - [Getting Started](#getting-started)
     - [Installation](#installation)
@@ -20,7 +19,6 @@ MVI architecture.
     - [StoreCreator](docs/store_creator.md)
 - [Testing](docs/testing.md)
 - [Contributing](#contributing)
-- [License](#license)
 
 ## Features
 
@@ -264,4 +262,11 @@ specific needs.
 - [BufferEnhancer](docs/buffer_enhancer.md)
 - [DebounceEnhancer](docs/debounce_enhancer.md)
 - [BatchEnhancer](docs/batch_enhancer.md)
+
+# Contributing
+
+Contributors are absolutely welcome! Contributions can come in many forms: bug reports, enhancements, PRs, documentation
+requests, you name it.
+
+See our [Contributing](CONTRIBUTING.md) documentation for how to get started!
 
