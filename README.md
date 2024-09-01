@@ -22,7 +22,6 @@ worrying about exceeding memory limits due to enormous state objects.
 
 ## Table of Contents
 
-- [Why **Kdux**?](#what-is-kdux)
 - [The **Kdux** Pattern](#the-kdux-pattern)
 - [Getting Started](#getting-started)
     - [Installation](#installation)
@@ -47,16 +46,6 @@ worrying about exceeding memory limits due to enormous state objects.
 - **Flexible Architecture**: Users have complete control over how they define state, actions, reducers, middleware, and
   enhancers.
 - **Integration with MVI**: **Kdux** is particularly well-suited for use in Android applications using MVI (Model-View-Intent) architecture.
-
-<br>
-<br>
-
-## Why **Kdux**?
-
-**Kdux** is a Kotlin-based state management library that implements the Redux pattern, designed to offer a **predictable**,
-**deterministic**, and **centralized** way to manage application state across any Kotlin project. The **Kdux** pattern
-is particularly effective in scenarios where state consistency, scalability, and traceability are critical, making it an ideal solution for complex
-applications, especially those using MVI (Model-View-Intent) architecture.
 
 <br>
 <br>
