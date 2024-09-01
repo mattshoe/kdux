@@ -55,21 +55,13 @@ class DebounceEnhancer<State: Any, Action: Any>(
                 var actionToDispatch: Action? = null
 
                 debounceMutex.withLock {
-                    println("entered lock")
-                    println("Elapsed time: ${elapsedTimeSinceLastDispatch.inWholeMilliseconds}ms")
-                    println("Threshold: ${duration.inWholeMilliseconds}ms")
-                    println("elapsedTimeSinceLastDispatch > duration -----> ${elapsedTimeSinceLastDispatch > duration}")
                     if (elapsedTimeSinceLastDispatch > duration) {
-                        println("not debounced")
                         actionToDispatch = action
                         debounceStart = now
-                    } else {
-                        println("debounced")
                     }
                 }
 
                 actionToDispatch?.let {
-                    println("dispatching")
                     store.dispatch(it)
                 }
             }

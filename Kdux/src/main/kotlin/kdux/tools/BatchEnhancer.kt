@@ -55,6 +55,7 @@ class BatchEnhancer<State: Any, Action: Any>(
 
                     if (elapsedTime > batchDuration) {
                         actionsToDispatch.addAll(batch)
+                        batch.clear()
                         batchStart = now
                     }
                 }

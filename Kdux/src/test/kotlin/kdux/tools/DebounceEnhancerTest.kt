@@ -60,7 +60,7 @@ class DebounceEnhancerTest {
             store.dispatch(TestAction.Increment)
             store.dispatch(TestAction.Increment)
             store.dispatch(TestAction.Increment)
-            
+
             assertThat(awaitItem()).isEqualTo(1)
 
             advanceTimeBy(2000) // Advance time to exceed debounce duration
@@ -75,17 +75,12 @@ class DebounceEnhancerTest {
         store.state.test {
             assertThat(awaitItem()).isEqualTo(0)
 
-            println("dispatching first increment")
             store.dispatch(TestAction.Increment)
-            println("dispatched first increment")
             assertThat(awaitItem()).isEqualTo(1)
 
-            println("advancing 2000")
             delay(700)
 
-            println("dispatching second increment")
             store.dispatch(TestAction.Increment)
-            println("second done")
             assertThat(awaitItem()).isEqualTo(2)
         }
     }
