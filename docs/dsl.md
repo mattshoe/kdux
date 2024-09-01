@@ -5,8 +5,8 @@ will walk you through each component of the DSL, explaining how to use it effect
 
 ## Global Settings
 
-To configure global settings in your Kdux-powered application, you will use the `kdux` function. This function accepts a
-lambda where you can define global behaviors such as guards, loggers, and performance monitors.
+To configure global settings in your Kdux-powered application, you will use the `kdux {...}` function. This function accepts a
+lambda for you to define global behaviors that will be applied to all Kdux Stores in the application.
 
 ### Usage Example
 
@@ -37,8 +37,9 @@ kdux {
 
 ## Creating a Store
 
-You can create a store using the `kdux.store` function provided by the DSL. The lambda allows you to configure any
-additional functionality you want your `Store` to have, such as debouncing, action logging, batched dispatches, etc.
+You can create a store using the `store(...) {...}` function provided by the DSL. The lambda allows you to configure any
+additional functionality you want your `Store` to have, such as debouncing, action logging, buffered dispatches, and
+any other functionality you could come up with.
 
 Note that the lambda and all functions inside it are entirely optional. Only `initialState` and `reducer` are required.
 
