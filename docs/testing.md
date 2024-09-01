@@ -29,6 +29,7 @@ class StoreFlowTest {
         store.state.test {
             // initial value
             assdertThat(awaitItem().count).isEqualto(0)
+          
             store.dispatch(CounterAction.Increment)
             assertThat(awaitItem().count).isEqualTo(1)
 
