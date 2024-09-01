@@ -2,11 +2,11 @@
 
 Middleware in Kdux represents a powerful mechanism for intercepting and processing actions as they are dispatched to the
 store. Middleware acts as an intermediary between dispatching an action and the reducer that processes it, allowing for
-side effects, action modification, logging, or even stopping actions from reaching the reducer.
+side effects, action modification, or even blocking actions from reaching the reducer altogether.
 
-Middleware is essential for managing side effects in a predictable manner, such as handling asynchronous operations,
-logging actions, performing validation, or augmenting actions before they are passed to the reducer. It provides a
-mechanism to handle these concerns separately from the core state management logic.
+Middleware is essential for compartmentalizing operations and managing side effects in a predictable manner, such as 
+handling asynchronous operations, logging actions, performing validation, or augmenting actions before they are passed to 
+the reducer. It provides a mechanism to handle these concerns separately from the core state management logic.
 
 ## How Middleware Works
 
