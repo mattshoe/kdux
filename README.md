@@ -17,6 +17,9 @@ In an Android application, monolithic state become unwieldy very quickly. So by 
 we can more easily manage the limited available memory and recover from process death or configuration changes without 
 worrying about exceeding memory limits due to enormous state objects.
 
+<br>
+<br>
+
 ## Table of Contents
 
 - [Why **Kdux**?](#what-is-kdux)
