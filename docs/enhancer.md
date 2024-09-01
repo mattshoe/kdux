@@ -51,7 +51,7 @@ new capabilities to the store, such as batching, persistence, or other cross-cut
 - Multiple enhancers can be chained together to apply layers of behavior modification to a store. Each enhancer wraps
   the store created by the previous enhancer, allowing you to compose complex behavior in a modular and reusable way.
 
-## Example: Action Batching Enhancer
+## Example: Action Buffering Enhancer
 
 An example of behavior that cannot be achieved through middleware is a `BufferEnhancer`, which collects actions in a buffer
 until a size limit is reach, then dispatches them all at once:
