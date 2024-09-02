@@ -29,6 +29,15 @@ fun <State: Any, Action: Any> store(
         .apply(configuration)
         .builder
         .apply {
+            if (KduxMenu.globalErrorHandlers.isNotEmpty()) {
+                add(
+                    FailSafeEnhancer { state, action, error, dispatch ->
+                        KduxMenu.globalErrorHandlers.forEach { onError ->
+                            onError(state, action, error)
+                        }
+                    }
+                )
+            }
             if (KduxMenu.loggers.isNotEmpty()) {
                 add(
                     LoggingEnhancer { action ->

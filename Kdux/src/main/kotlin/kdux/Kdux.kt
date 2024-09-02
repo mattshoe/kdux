@@ -19,6 +19,37 @@ class KduxMenu {
         internal val loggers = mutableListOf<(Any) -> Unit>()
         internal val performanceMonitors = mutableListOf<(PerformanceData<*>) -> Unit>()
         internal val globalGuards = mutableListOf<suspend (Any) -> Boolean>()
+        internal val globalErrorHandlers = mutableListOf<suspend (Any, Any, Throwable) -> Unit>()
+    }
+
+    /**
+     * Adds a global error handler that will be invoked whenever an error occurs during action dispatch
+     * across any store in the application.
+     *
+     * This handler allows you to centralize error handling logic, ensuring that errors can be caught
+     * and processed consistently across all stores.
+     *
+     * The provided [onError] function will receive the current state, the action that caused the error,
+     * and the error itself. You can use this function to log errors, report them to an external service,
+     * or apply any custom recovery logic needed.
+     *
+     * The [onError] function should execute quickly, as it will be invoked frequently and rapidly
+     * during dispatch operations.
+     *
+     * @param onError A suspend function that is called when an error occurs during action dispatch.
+     *                It receives three parameters:
+     *                - `state`: The current state of the store when the error occurred.
+     *                - `action`: The action that was being dispatched when the error occurred.
+     *                - `error`: The throwable that was thrown during the dispatch process.
+     */
+    fun globalErrorHandler(
+        onError: suspend (
+            state: Any,
+            action: Any,
+            error: Throwable
+        ) -> Unit
+    ) {
+        globalErrorHandlers.add(onError)
     }
 
     /**
@@ -65,6 +96,7 @@ class KduxMenu {
         loggers.clear()
         performanceMonitors.clear()
         globalGuards.clear()
+        globalErrorHandlers.clear()
     }
 
 }
