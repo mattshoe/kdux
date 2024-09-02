@@ -32,6 +32,32 @@ val store = kdux.store(
 }
 ```
 
+<br>
+<br>
+
+## Gson
+
+Kdux supports Kotlinx Serialization for its [State Persistence](persistence_enhancer.md) functionality.
+
+#### Dependency
+```kotlin
+dependencies {
+    implementation("com.mattshoe.shoebox:Kdux.gson:1.0.5")
+}
+```
+#### Usage
+
+```kotlin
+val store = kdux.store(
+    initialValue = MyState(),
+    reducer = MyReducer()
+) {
+    persistWithGson(key = "myGloballyUniqueKey") { state, error ->
+        // handle error
+    }
+}
+```
+
 
 
 

@@ -6,8 +6,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 
-val charSet = Charsets.UTF_8
-
 /**
  * Adds a [PersistenceEnhancer] to the store that uses `kotlinx-serialization` to serialize State objects, enabling automatic persistence and restoration of the store's state.
  * This function is designed to make it easy to persist and restore the state of your store across application restarts
@@ -37,7 +35,7 @@ inline fun <reified State : Any, Action : Any> StoreDslMenu<State, Action>.persi
         key,
         serializer = { state, outputStream ->
             outputStream.write(
-                Json.encodeToString(state).toByteArray(charSet)
+                Json.encodeToString(state).toByteArray()
             )
         },
         deserializer = {

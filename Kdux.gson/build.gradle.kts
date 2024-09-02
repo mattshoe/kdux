@@ -6,13 +6,13 @@ plugins {
 }
 
 ext {
-    set("ARTIFACT_ID", "Kdux.kotlinx-serialization")
-    set("PUBLICATION_NAME", "kduxKotlinxSerialization")
+    set("ARTIFACT_ID", "Kdux.gson")
+    set("PUBLICATION_NAME", "kduxGson")
 }
 
 dependencies {
     implementation(project(":Kdux"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2")
+    implementation("com.google.code.gson:gson:2.11.0")
 
     testImplementation(kotlin("test"))
     testImplementation("com.google.truth:truth:1.4.4")

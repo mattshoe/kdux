@@ -6,7 +6,7 @@ plugins {
 
 ext {
     set("ARTIFACT_ID", "Kdux")
-    set("PUBLICATION_NAME", "kernlRuntime")
+    set("PUBLICATION_NAME", "kdux")
 }
 
 dependencies {
