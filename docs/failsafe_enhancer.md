@@ -1,12 +1,12 @@
 ## FailSafeEnhancer
 
-The `FailSafeEnhancer` provides a mechanism to handle errors during the dispatch process in a Redux-like state management system. By integrating this enhancer into your store, you can prevent your application from crashing due to unexpected exceptions and instead recover gracefully by providing fallback logic or retry mechanisms.
+The `FailSafeEnhancer` provides a mechanism to handle errors during the dispatch process. By integrating this enhancer into your store, you can prevent your application from crashing due to unexpected exceptions and instead recover gracefully by providing fallback logic or even retry/recovery mechanisms.
 
 ### Overview
 
 ### What is the `FailSafeEnhancer`?
 
-The `FailSafeEnhancer` intercepts errors that occur during the processing of actions. When an exception is thrown while an action is being dispatched, the enhancer catches the exception and invokes a custom `onError` function. This function allows you to handle the error, potentially retry the action, or dispatch a different action to recover from the error.
+The `FailSafeEnhancer` intercepts errors that occur during the processing of actions. When an exception is thrown while an action is being dispatched, the enhancer catches the exception and invokes your `onError` function. This function allows you to handle the error, potentially retry the action, or even dispatch a different action to recover from the error.
 
 ### Why Use the `FailSafeEnhancer`?
 
