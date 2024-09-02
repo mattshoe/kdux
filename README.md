@@ -50,7 +50,7 @@ worrying about exceeding memory limits due to enormous state objects.
   enhancers.
 - **Integration with MVI**: **Kdux** is particularly well-suited for use in Android applications [using MVI](docs/kdux_mvi.md) (
   Model-View-Intent) architecture.
-- **Extensive Tooling**: The **Kdux** library comes with extensive built-in tooling for you to take advantage of; such
+- **Extensive Tooling**: The **Kdux** library comes with built-in support for [all major relevant libraries](docs/third_party_support), and extensive tooling for you to take advantage of; such
   as [persistence](docs/persistence_enhancer.md), [error reporting](docs/failsafe_enhancer.md), [performance logging](docs/performance_enhancer.md), [authorization](docs/guard_enhancer.md), [timeouts](docs/timeout_enhancer.md), [buffering](docs/buffer_enhancer.md), [debouncing](docs/debounce_enhancer.md), [throttling](docs/throttle_enhancer.md),
   and many more. New tools are being added all the time!
 
@@ -234,7 +234,7 @@ Add the dependency for **Kdux** to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("com.example:kdux:1.0.5")
+    implementation("com.mattshoe.shoebox:Kdux:1.0.5")
 }
 ```
 
