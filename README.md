@@ -61,8 +61,7 @@ At the heart of **Kdux** is the Redux pattern, a well-established approach to ma
 traceable manner. The **Kdux Pattern** revolves around these core principles:
 
 1. **Unidirectional Data Flow:** Data flows in a single direction—actions are dispatched, reducers process them, and the
-   store updates the state, which the UI observes. This simplifies the data flow, making the application easier to
-   reason about, debug, and maintain.
+   store updates the state. This simplifies the data flow, making the application easier to reason about, debug, and maintain.
 2. **Single Source of Truth:** Your cohesive chunk of state is stored in a single object, which ensures consistency and provides a clear
    and accessible snapshot of the application at any point in time.
 3. **Cohesive State:** You application should group only related state data into the same `Store`/`State` to avoid
