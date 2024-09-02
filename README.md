@@ -91,7 +91,7 @@ apart.
 
 **Kdux** emphasizes the use of pure functions within an object-oriented design. Unlike traditional Redux, which is
 heavily rooted in functional programming paradigms, **Kdux** takes a more object-oriented approach while still
-leveraging the benefits of pure functions. This approach enhances:
+leveraging the benefits of pure functions. 
 
 
 #### Advantages of Object-Oriented Pure Functions
