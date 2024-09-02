@@ -46,7 +46,7 @@ worrying about exceeding memory limits due to enormous state objects.
 - **Flexible Architecture**: Users have complete control over how they define state, actions, reducers, middleware, and
   enhancers.
 - **Integration with MVI**: **Kdux** is particularly well-suited for use in Android applications using MVI (Model-View-Intent) architecture.
-- **Extensive Tooling**: The **Kdux** library comes with extensive tooling for you to take advantage of; such as error reporting, performance logging, authorization, buffering, debouncing, throttling, etc
+- **Extensive Tooling**: The **Kdux** library comes with extensive tooling for you to take advantage of; such as error reporting, performance logging, authorization, buffering, debouncing, throttling, and many more. New tools are being added all the time!
 
 <br>
 <br>
