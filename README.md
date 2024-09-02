@@ -5,7 +5,8 @@ optimized to take advantage of all the great features modern Kotlin has to offer
 coroutines support, you get all the benefits of Kotlin.
 
 **Kdux** takes a new approach to the Redux pattern by moving away from the monolithic architecture of a Global State
-used by traditional Redux, and by enforcing sequential-by-default behavior of dispatches. This strongly enforces Structured
+used by traditional Redux, and by enforcing sequential-by-default behavior of dispatches. This strongly enforces
+Structured
 Concurrency in your state management while drastically reducing race conditions and making state transitions truly
 deterministic.
 
@@ -14,7 +15,7 @@ both "action-driven" architectures, and so it works wonderfully to help segregat
 and data layers. Check out this [much more in depth discussion on the benefits here](docs/kdux_mvi.md).
 
 In an Android application, monolithic state become unwieldy very quickly. So by taking a modularized approach to State,
-we can more easily manage the limited available memory and recover from process death or configuration changes without 
+we can more easily manage the limited available memory and recover from process death or configuration changes without
 worrying about exceeding memory limits due to enormous state objects.
 
 <br>
@@ -45,8 +46,11 @@ worrying about exceeding memory limits due to enormous state objects.
   concurrency model.
 - **Flexible Architecture**: Users have complete control over how they define state, actions, reducers, middleware, and
   enhancers.
-- **Integration with MVI**: **Kdux** is particularly well-suited for use in Android applications using MVI (Model-View-Intent) architecture.
-- **Extensive Tooling**: The **Kdux** library comes with extensive tooling for you to take advantage of; such as error reporting, performance logging, authorization, buffering, debouncing, throttling, and many more. New tools are being added all the time!
+- **Integration with MVI**: **Kdux** is particularly well-suited for use in Android applications using MVI (
+  Model-View-Intent) architecture.
+- **Extensive Tooling**: The **Kdux** library comes with extensive tooling for you to take advantage of; such as error
+  reporting, performance logging, authorization, buffering, debouncing, throttling, and many more. New tools are being
+  added all the time!
 
 <br>
 <br>
@@ -56,12 +60,17 @@ worrying about exceeding memory limits due to enormous state objects.
 At the heart of **Kdux** is the Redux pattern, a well-established approach to managing state in a predictable and
 traceable manner. The **Kdux Pattern** revolves around these core principles:
 
-1. **Single Source of Truth:** Your state is stored in a single object, which ensures consistency and provides a clear
+1. **Unidirectional Data Flow:** Data flows in a single direction—actions are dispatched, reducers process them, and the
+   store updates the state, which the UI observes. This simplifies the data flow, making the application easier to
+   reason about, debug, and maintain.
+2. **Single Source of Truth:** Your cohesive chunk of state is stored in a single object, which ensures consistency and provides a clear
    and accessible snapshot of the application at any point in time.
-2. **Cohesive State:** You application should group only related state data into the same `Store`/`State` to avoid unwieldy state objects and logic. States should only be as large as they are cohesive; meaning you should group as much related State together as you can, but not unrelated states. 
-3. **State is Read-Only:** The state cannot be modified directly. Instead, actions are dispatched to indicate the intent
+3. **Cohesive State:** You application should group only related state data into the same `Store`/`State` to avoid
+   unwieldy state objects and logic. States should only be as large as they are cohesive; meaning you should group as
+   much related State together as you can, but not unrelated states.
+4. **Read-Only State:** The state cannot be modified directly. Instead, actions are dispatched to indicate the intent
    to change the state. This ensures that all state transitions are explicit, traceable, and follow a predictable flow.
-4. **Changes are Made with Pure Functions:** Reducers are pure functions that take the current state and an action as
+5. **Changes are Made with Pure Functions:** Reducers are pure functions that take the current state and an action as
    input, and return a new state. This guarantees that the state transitions are predictable and easy to test.
 
 #### How **Kdux** Differs from Traditional Redux
@@ -103,16 +112,18 @@ optimized independently, reducing the overhead associated with serializing and d
 
 #### Synchronous Dispatch and Structured Concurrency
 
-Another key difference in **Kdux** is how it handles the dispatch operation. In traditional Redux, dispatching actions is
-often asynchronous, and each of its middleware/enhancers are asynchronous, which can introduce massive complexities around 
+Another key difference in **Kdux** is how it handles the dispatch operation. In traditional Redux, dispatching actions
+is
+often asynchronous, and each of its middleware/enhancers are asynchronous, which can introduce massive complexities
+around
 managing race conditions and ensuring that state updates occur in a predictable order.
 
 **Kdux**, however, adheres to Kotlin’s structured concurrency model. In **Kdux**:
 
 - **Synchronous Dispatch by Default:** Dispatch operations are not asynchronous by default. When an action is
-  dispatched, it is processed sequentially and predictably within the current coroutine context. Each of its middleware 
-  and enhancers also obey structured concurrency consequently. This synchronous behavior allows you to ensure that each 
-  action is fully processed before the next one begins if you wish to, eliminating race conditions and making state 
+  dispatched, it is processed sequentially and predictably within the current coroutine context. Each of its middleware
+  and enhancers also obey structured concurrency consequently. This synchronous behavior allows you to ensure that each
+  action is fully processed before the next one begins if you wish to, eliminating race conditions and making state
   transitions more predictable.
 - **Structured Concurrency:** **Kdux** leverages Kotlin’s structured concurrency to ensure that all state transitions
   and
@@ -140,7 +151,6 @@ that even the most complex applications can maintain a consistent and reliable s
 
 <br>
 <br>
-
 
 ### Flow of Events in **Kdux**
 
@@ -277,7 +287,6 @@ Here's a simple example of a `Store` that just manages a "Counter" to track a va
 <br>
 <br>
 
-
 ## Advanced Usage
 
 **Kdux** is designed to be highly flexible and extensible. The documents below will dive deep into how you can leverage
@@ -303,10 +312,8 @@ specific needs.
 - [ThrottleEnhancer](docs/throttle_enhancer.md)
 - [BatchEnhancer](docs/batch_enhancer.md)
 
-
 <br>
 <br>
-
 
 # Contributing
 
