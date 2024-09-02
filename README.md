@@ -1,11 +1,11 @@
 # **Kdux**
 
-**Kdux** is a state management library that takes a more modern and practical approach to the Redux pattern. **Kdux** is
+**Kdux** is a state management library that takes a more modern and practical approach to the [Redux](https://redux.js.org/tutorials/fundamentals/part-1-overview) pattern. **Kdux** is
 optimized to take advantage of all the great features modern Kotlin has to offer. With a [custom DSL](docs/dsl.md) and
 built-in
 coroutines support, you get all the benefits of Kotlin.
 
-**Kdux** takes a new approach to the Redux pattern by moving away from the monolithic architecture of a Global State
+**Kdux** takes a **_new, more practical approach_** to the [Redux](https://redux.js.org/tutorials/fundamentals/part-1-overview) pattern by moving away from the monolithic architecture of a Global State
 used by traditional Redux, and by enforcing sequential-by-default behavior of dispatches. This strongly enforces
 Structured
 Concurrency in your state management while drastically reducing race conditions and making state transitions truly
@@ -48,9 +48,9 @@ worrying about exceeding memory limits due to enormous state objects.
   concurrency model.
 - **Flexible Architecture**: Users have complete control over how they define state, actions, reducers, middleware, and
   enhancers.
-- **Integration with MVI**: **Kdux** is particularly well-suited for use in Android applications using MVI (
+- **Integration with MVI**: **Kdux** is particularly well-suited for use in Android applications [using MVI](docs/kdux_mvi.md) (
   Model-View-Intent) architecture.
-- **Extensive Tooling**: The **Kdux** library comes with extensive tooling for you to take advantage of; such
+- **Extensive Tooling**: The **Kdux** library comes with extensive built-in tooling for you to take advantage of; such
   as [error reporting](docs/failsafe_enhancer.md), [performance logging](docs/performance_enhancer.md), [authorization](docs/guard_enhancer.md), [timeouts](docs/timeout_enhancer.md), [buffering](docs/buffer_enhancer.md), [debouncing](docs/debounce_enhancer.md), [throttling](docs/throttle_enhancer.md),
   and many more. New tools are being added all the time!
 
@@ -59,7 +59,7 @@ worrying about exceeding memory limits due to enormous state objects.
 
 ## The **Kdux** Pattern
 
-At the heart of **Kdux** is the Redux pattern, a well-established approach to managing state in a predictable and
+At the heart of **Kdux** is the [Redux pattern](https://redux.js.org/tutorials/fundamentals/part-1-overview), a well-established approach to managing state in a predictable and
 traceable manner. The **Kdux Pattern** revolves around these core principles:
 
 1. **Unidirectional Data Flow:** Data flows in a single direction—actions are dispatched, reducers process them, and the
@@ -80,7 +80,7 @@ traceable manner. The **Kdux Pattern** revolves around these core principles:
 
 #### How **Kdux** Differs from Traditional Redux
 
-While **Kdux** is heavily inspired by the traditional Redux pattern, it introduces several key differences and
+While **Kdux** is heavily inspired by the traditional [Redux pattern](https://redux.js.org/tutorials/fundamentals/part-1-overview), it introduces several key differences and
 enhancements
 tailored specifically for Kotlin applications, particularly in environments like Android where proper resource
 management
@@ -171,7 +171,7 @@ Benefits of Synchronous Dispatch and Structured Concurrency
 
 #### tl;dr
 
-**Kdux** enhances the well-proven Redux pattern with a few tweaks to provide a powerful, flexible, and scalable state
+**Kdux** enhances the well-proven [Redux pattern](https://redux.js.org/tutorials/fundamentals/part-1-overview) with a few tweaks to provide a powerful, flexible, and scalable state
 management solution for Kotlin projects. By enforcing predictability, centralization, and testability, **Kdux** ensures
 that even the most complex applications can maintain a consistent and reliable state management strategy.
 
