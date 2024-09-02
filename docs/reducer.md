@@ -11,45 +11,15 @@ the application's state should change in response to those actions.
   instance with the necessary changes.
 - **Action-Driven**: Reducers are driven by actions that represent events or intents within the application. Each action
   contains logic describing what happened, and the reducer determines how the state should change in response.
-- **Synchronous or Asynchronous**: While typically synchronous, reducers can be `suspend` functions, allowing them to
-  handle asynchronous operations before returning the new state.
 
 ### How Reducers Work
 
-1. **Receive Action**: The reducer receives an action dispatched by the store after it has passed through any
-   middleware.
+1. **Receive Action**: The reducer receives an action dispatched by the store after it has passed through all
+   middleware if present.
 2. **Process State**: The reducer examines the current state and the dispatched action to determine how the state should
    change.
 3. **Return New State**: The reducer creates a new state object based on the logic associated with the action and
    returns it. The store then updates its state to the new state returned by the reducer.
-
-### Example Reducer
-
-Consider a simple counter example where the state is an integer representing the current count. The reducer handles two
-types of actions: increment and decrement:
-
-```kotlin
-data class CounterState(val count: Int)
-
-sealed class CounterAction {
-    object Increment : CounterAction()
-    object Decrement : CounterAction()
-}
-
-class CounterReducer : Reducer<CounterState, CounterAction> {
-    override suspend fun reduce(state: CounterState, action: CounterAction): CounterState {
-        return when (action) {
-            is CounterAction.Increment -> state.copy(count = state.count + 1)
-            is CounterAction.Decrement -> state.copy(count = state.count - 1)
-        }
-    }
-}
-```
-
-In this example, the reducer handles two types of actions (Increment and Decrement) and updates the state accordingly.
-If the Increment action is received, the state is updated by incrementing the count. If the Decrement action is
-received, the state is updated by decrementing the count. The reducer always returns a new state without modifying the
-original state.
 
 ### Principles of Reducer Design
 
