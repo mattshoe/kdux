@@ -201,4 +201,19 @@ class StoreDslMenu<State: Any, Action: Any>(
     ) {
         builder.add(FailSafeEnhancer(onError))
     }
+
+    /**
+     * Adds a `TimeoutEnhancer` to the store's builder, which enforces a time limit on the dispatching of actions.
+     * If an action is not processed within the specified [value] duration, the dispatch is canceled, and a `TimeoutCancellationException` is thrown.
+     *
+     * This is useful for ensuring that actions are processed within a reasonable time frame, avoiding long-running operations from blocking the store.
+     *
+     * @param value The maximum duration allowed for processing an action. If the action is not processed
+     * within this duration, the dispatch is canceled. The duration must be greater than zero.
+     *
+     * @throws IllegalArgumentException if the `value` is less than or equal to zero.
+     */
+    fun timeout(value: Duration) {
+        builder.add(TimeoutEnhancer(value))
+    }
 }

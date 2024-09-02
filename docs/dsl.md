@@ -79,6 +79,9 @@ val store = kdux.store(
             dispatch(RecoveryAction)
         }
     }
+    
+    // Add a timeout to cancel any dispatch that takes too long
+    timeout(2.seconds)
 
     // Add performance reporting
     monitorPerformance { data ->
