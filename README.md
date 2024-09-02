@@ -11,7 +11,8 @@ Structured
 Concurrency in your state management while drastically reducing race conditions and making state transitions truly
 deterministic.
 
-The [**Kdux** pattern](#the-kdux-pattern) is particularly well-suited to integrate with Android's [MVI architecture](docs/kdux_mvi.md). **Kdux** and **MVI** are
+The [**Kdux** pattern](#the-kdux-pattern) is particularly well-suited to integrate with
+Android's [MVI architecture](docs/kdux_mvi.md). **Kdux** and **MVI** are
 both "action-driven" architectures, and so it works wonderfully to help segregate concerns between your view, business,
 and data layers. Check out this [much more in depth discussion on the benefits here](docs/kdux_mvi.md).
 
@@ -65,15 +66,17 @@ traceable manner. The **Kdux Pattern** revolves around these core principles:
    store updates the state. This simplifies the data flow, making the application easier to reason about, debug, and
    maintain.
 2. **Single Source of Truth:** Your cohesive chunk of state is stored in a single object, which ensures consistency and
-   provides a clear
-   and accessible snapshot of the application at any point in time.
+   provides a clear and accessible snapshot of the application at any point in time.
 3. **Cohesive State:** You application should group only related state data into the same `Store`/`State` to avoid
    unwieldy state objects and logic. States should only be as large as they are cohesive; meaning you should group as
    much related State together as you can, but not unrelated states.
 4. **Read-Only State:** The state cannot be modified directly. Instead, actions are dispatched to indicate the intent
    to change the state. This ensures that all state transitions are explicit, traceable, and follow a predictable flow.
-5. **Changes are Made with Pure Functions:** Reducers are pure functions that take the current state and an action as
-   input, and return a new state. This guarantees that the state transitions are predictable and easy to test.
+5. **Object-Oriented**: While traditional Redux focuses on functional programming, **Kdux** integrates
+   the principles of functional programming into an object-oriented design. This approach allows for better code reuse,
+   reduces cognitive load, and encourages a strong separation of concerns. By using pure functions within an
+   object-oriented structure, **Kdux** leverages the predictability and simplicity of functional programming while
+   maintaining the modularity and scalability of object-oriented design.
 
 #### How **Kdux** Differs from Traditional Redux
 
@@ -83,6 +86,32 @@ tailored specifically for Kotlin applications, particularly in environments like
 management
 and memory usage are critical, and process death can occur at any time. Below are some of the things that set **Kdux**
 apart.
+
+#### Object-Oriented
+
+**Kdux** emphasizes the use of pure functions within an object-oriented design. Unlike traditional Redux, which is
+heavily rooted in functional programming paradigms, **Kdux** takes a more object-oriented approach while still
+leveraging the benefits of pure functions. This approach enhances:
+
+
+#### Advantages of Object-Oriented Pure Functions
+
+- **Dependency Injection:** Each component (middleware, store, enhancer, reducer) in **Kdux** can be fully decoupled from 
+  each other and integrated into Dependency Injection (DI) frameworks like Hilt or Dagger. This allows for simplified
+  dependency management, as dependencies are automatically provided by the DI container, rather than manually injecting
+  them at the time of invocation. It keeps each component separated and unrelated to each other until assembled in the
+  store.
+- **Reusability:** By embedding pure functions within classes, **Kdux** allows for greater reusability of logic across
+  different parts of the application.
+- **Separation of Concerns:** The object-oriented structure encourages a clearer separation of concerns, making it
+  easier to maintain and scale the application. Pure functional approaches tend to create extremely large files with 
+  poor cohesion, while Object-Oriented approaches focus on discrete classes.
+- **Ease of Testing:** Pure functions are inherently easier to test, and when combined with object-oriented principles,
+  they allow for isolated unit tests that are less brittle and more reliable.
+- **Code Reuse:** The encapsulation of pure functions within objects allows for better reuse of logic across different
+  areas of the application, reducing redundancy and improving maintainability.
+- **Improved Maintainability:** The clear separation of concerns facilitated by object-oriented pure functions leads to
+  more maintainable code, as changes to one part of the system are less likely to impact others.
 
 #### Cohesive State; not Global State
 
@@ -128,8 +157,8 @@ managing race conditions and ensuring that state updates occur in a predictable 
   action is fully processed before the next one begins if you wish to, eliminating race conditions and making state
   transitions more predictable.
 - **Structured Concurrency:** **Kdux** leverages Kotlin’s structured concurrency to ensure that all state transitions
-  and
-  side effects are managed within a defined scope. This means that dispatch operations are always predictable and occur
+  and side effects are managed within a defined scope. This means that dispatch operations are always predictable and
+  occur
   within the bounds of the coroutine scope in which they are executed, simplifying resource management and reducing the
   likelihood of memory leaks or orphaned coroutines.
 
@@ -250,7 +279,8 @@ Here's a simple example of a [Store](docs/store.md) that manages a "Counter" to 
    }
    ```
 
-4. Define your [Store](docs/store.md). This is done using the [**Kdux** DSL](docs/dsl.md). This allows you to delegate to a class, or
+4. Define your [Store](docs/store.md). This is done using the [**Kdux** DSL](docs/dsl.md). This allows you to delegate
+   to a class, or
    store it in a
    property
    with the same ease.
