@@ -3,4 +3,3 @@ plugins {
 }
 rootProject.name = "Kdux.Project"
 include("Kdux")
-include("Kdux")
