@@ -209,7 +209,7 @@ Add the dependency for **Kdux** to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("com.example:kdux:1.0.4")
+    implementation("com.example:kdux:1.0.5")
 }
 ```
 
@@ -326,4 +326,3 @@ Contributors are absolutely welcome! Contributions can come in many forms: bug r
 requests, you name it.
 
 See our [Contributing](CONTRIBUTING.md) documentation for how to get started!
-
