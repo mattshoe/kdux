@@ -6,6 +6,9 @@ third party libraries to provide a seamless and efficient development experience
 By breaking out support into numerous "add-on" dependencies, you can pick and choose only the support you need, so that
 you can keep your application size as small as possible.
 
+<br>
+<br>
+
 ## Kotlinx Serialization
 
 Kdux supports Kotlinx Serialization for its [State Persistence](persistence_enhancer.md) functionality.  
