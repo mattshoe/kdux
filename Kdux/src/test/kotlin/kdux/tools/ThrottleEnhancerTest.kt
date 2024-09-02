@@ -38,7 +38,7 @@ class ThrottleEnhancerTest {
             initialState = initialState,
             reducer = TestReducer()
         ) {
-            add(ThrottleEnhancer(500.milliseconds))
+            throttle(500.milliseconds)
         }
     }
 

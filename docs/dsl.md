@@ -66,6 +66,14 @@ val store = kdux.store(
     log { action ->
         doTheLogging(action)
     }
+    
+    // Add error recovery
+    onError { state, action, error, dispatch ->
+        myLogger("Encountered error: ${error}")
+        if (action is ImportantAction) {
+            dispatch(RecoveryAction)
+        }
+    }
 
     // Add performance reporting
     monitorPerformance { data ->

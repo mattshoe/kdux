@@ -165,4 +165,40 @@ class StoreDslMenu<State: Any, Action: Any>(
     fun throttle(interval: Duration) {
         builder.add(ThrottleEnhancer(interval))
     }
+
+    /**
+     * Adds a [FailSafeEnhancer] to the store, which handles errors that occur during dispatch.
+     *
+     * If an error occurs while processing an action, the provided [onError] function is invoked.
+     * This function can be used to perform error handling, logging, or dispatching recovery actions.
+     *
+     * This function guarantees that any exceptions thrown during dispatch are caught.
+     *
+     * @param onError A suspend function that is called when an error occurs during action dispatching.
+     * It receives the current state, the action that caused the error, the error itself, and a dispatch function that can be used to
+     * dispatch a new action to the store as a recovery mechanism.
+     *
+     * Example usage:
+     * ```kotlin
+     * store(...) {
+     *     onError { state, action, error, dispatch ->
+     *         // Log the error and dispatch a recovery action if necessary
+     *         println("Error occurred: ${error.message}")
+     *         if (action is ImportantAction) {
+     *             dispatch(RecoveryAction)
+     *         }
+     *     }
+     * }
+     * ```
+     */
+    fun onError(
+        onError: suspend (
+            state: State,
+            action: Action,
+            error: Throwable,
+            dispatch: suspend (Action) -> Unit
+        ) -> Unit
+    ) {
+        builder.add(FailSafeEnhancer(onError))
+    }
 }
