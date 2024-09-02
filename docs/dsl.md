@@ -15,6 +15,11 @@ Here’s a list of the various global configurations available to you.
 
 ```kotlin
 kdux {
+    // Add a global error handler to all stores
+    globalErrorHandler { state, action, error ->
+        reportErrorToSomewhere(state, action, error)
+    }
+    
     // Add a global action filter, blocking any dispatch in the application as you see fit
     globalGuard { action ->
         isUserLoggedIn() && isAllowed(action)
