@@ -147,4 +147,22 @@ class StoreDslMenu<State: Any, Action: Any>(
     fun guard(isAuthorized: suspend (Action) -> Boolean) {
         builder.add(GuardEnhancer(isAuthorized))
     }
+
+    /**
+     * Adds a [ThrottleEnhancer] to the store, which limits the rate at which actions are dispatched.
+     *
+     * Actions are dispatched at most once per specified [interval]. If actions are dispatched more frequently,
+     * they are queued and dispatched sequentially, with each dispatch delayed by the [interval].
+     *
+     * This function is useful in scenarios where you want to prevent actions from being dispatched too frequently,
+     * such as limiting the rate of updates in response to rapid user input or other high-frequency events.
+     *
+     * @param interval The minimum time interval between consecutive action dispatches. If an action is dispatched
+     *                 before this interval has passed since the last action, it will be delayed until the interval has elapsed.
+     *
+     * @throws IllegalArgumentException if `interval` is less than or equal to zero.
+     */
+    fun throttle(interval: Duration) {
+        builder.add(ThrottleEnhancer(interval))
+    }
 }

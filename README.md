@@ -298,6 +298,7 @@ specific needs.
 - [PerformanceEnhancer](docs/performance_enhancer.md)
 - [BufferEnhancer](docs/buffer_enhancer.md)
 - [DebounceEnhancer](docs/debounce_enhancer.md)
+- [ThrottleEnhancer](docs/throttle_enhancer.md)
 - [BatchEnhancer](docs/batch_enhancer.md)
 
 

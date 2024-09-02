@@ -9,7 +9,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.TimeSource
 
-private val LONG_TIME_FROM_NOW = 10.days
+internal val LONG_TIME = 10.days
 
 /**
  * An enhancer that debounces dispatched actions based on a specified time duration.
@@ -42,7 +42,7 @@ open class DebounceEnhancer<State: Any, Action: Any>(
         return object : Store<State, Action> {
             private val timeSource = TimeSource.Monotonic
             private val now: TimeSource.Monotonic.ValueTimeMark get() = timeSource.markNow()
-            private var debounceStart = now.minus(LONG_TIME_FROM_NOW)
+            private var debounceStart = now.minus(LONG_TIME)
             private val elapsedTimeSinceLastDispatch: Duration get() = now.minus(debounceStart)
             private val debounceMutex = Mutex()
 

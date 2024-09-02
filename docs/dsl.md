@@ -71,6 +71,9 @@ val store = kdux.store(
     monitorPerformance { data ->
         doTheMonitoring(data)
     }
+    
+    // Throttle dispatch processing to once per interval
+    throttle(interval = 500.milliseconds)
 
     // Buffer your dispatches to be flushed all at once when they reach the size limit
     buffer(size = 12)
