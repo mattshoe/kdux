@@ -101,8 +101,6 @@ leveraging the benefits of pure functions.
   dependency management, as dependencies are automatically provided by the DI container, rather than manually injecting
   them at the time of invocation. It keeps each component separated and unrelated to each other until assembled in the
   store.
-- **Reusability:** By embedding pure functions within classes, **Kdux** allows for greater reusability of logic across
-  different parts of the application.
 - **Separation of Concerns:** The object-oriented structure encourages a clearer separation of concerns, making it
   easier to maintain and scale the application. Pure functional approaches tend to create extremely large files with 
   poor cohesion, while Object-Oriented approaches focus on discrete classes.
