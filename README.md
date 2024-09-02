@@ -301,6 +301,7 @@ specific needs.
 - [Testing](docs/testing.md)
 - [Middleware](docs/middleware.md)
 - [Enhancer](docs/enhancer.md)
+- [Reducer](docs/reducer.md)
 - [Store](docs/store.md)
 - [StoreCreator](docs/store_creator.md)
 
