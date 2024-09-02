@@ -215,7 +215,7 @@ dependencies {
 
 ## Usage
 
-Here's a simple example of a `Store` that just manages a "Counter" to track a value:
+Here's a simple example of a [Store](docs/store.md) that manages a "Counter" to track a value:
 
 1. Define the State your store will be operating on
     ```kotlin
@@ -229,7 +229,7 @@ Here's a simple example of a `Store` that just manages a "Counter" to track a va
         object Decrement : CounterAction()
     }
    ```
-3. Define the store's reducer. A reducer simply modifies the `State` given an `Action`
+3. Define the store's [reducer](docs/reducer.md). A reducer simply modifies the `State` given an `Action`
     ```kotlin
     // Option 1: Define your Reducer as a class (recommended)
     class CounterReducer : Reducer<CounterState, CounterAction> {
@@ -250,7 +250,7 @@ Here's a simple example of a `Store` that just manages a "Counter" to track a va
    }
    ```
 
-4. Define your store. This is done using the [**Kdux** DSL](docs/dsl.md). This allows you to delegate to a class, or
+4. Define your [Store](docs/store.md). This is done using the [**Kdux** DSL](docs/dsl.md). This allows you to delegate to a class, or
    store it in a
    property
    with the same ease.
