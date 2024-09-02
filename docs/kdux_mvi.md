@@ -28,7 +28,7 @@ leveraging Kdux to manage the underlying application state. Here’s how it work
       a `UiState` that the View can display.
 
 3. **Kdux Store (Data Layer)**
-    - The Kdux store manages the its (cohesive) state and processes actions dispatched by the ViewModel. Each action is
+    - The Kdux store manages its (cohesive) state and processes actions dispatched by the ViewModel. Each action is
       processed by the store's middleware, then reducer, then produces a new state.
     - The store’s `state` flow emits the updated state, which the ViewModel observes and maps to a `UiState`.
 

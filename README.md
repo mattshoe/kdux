@@ -1,7 +1,8 @@
 # **Kdux**
 
 **Kdux** is a state management library that takes a more modern and practical approach to the Redux pattern. **Kdux** is
-optimized to take advantage of all the great features modern Kotlin has to offer. With a custom DSL and built-in
+optimized to take advantage of all the great features modern Kotlin has to offer. With a [custom DSL](docs/dsl.md) and
+built-in
 coroutines support, you get all the benefits of Kotlin.
 
 **Kdux** takes a new approach to the Redux pattern by moving away from the monolithic architecture of a Global State
@@ -41,16 +42,16 @@ worrying about exceeding memory limits due to enormous state objects.
 
 ## Features
 
-- **Expressive DSL**: **Kdux** provides an expressive and flexible DSL that can be used to build tooling.
+- **Expressive DSL**: **Kdux** provides an [expressive and flexible DSL](docs/dsl.md) that can be used to build tooling.
 - **Structured Concurrency**: Built-in support for coroutines ensures that **Kdux** aligns with Kotlin's structured
   concurrency model.
 - **Flexible Architecture**: Users have complete control over how they define state, actions, reducers, middleware, and
   enhancers.
 - **Integration with MVI**: **Kdux** is particularly well-suited for use in Android applications using MVI (
   Model-View-Intent) architecture.
-- **Extensive Tooling**: The **Kdux** library comes with extensive tooling for you to take advantage of; such as error
-  reporting, performance logging, authorization, buffering, debouncing, throttling, and many more. New tools are being
-  added all the time!
+- **Extensive Tooling**: The **Kdux** library comes with extensive tooling for you to take advantage of; such
+  as [error reporting](docs/failsafe_enhancer.md), [performance logging](docs/performance_enhancer.md), [authorization](docs/guard_enhancer.md), [buffering](docs/buffer_enhancer.md), [debouncing](docs/debounce_enhancer.md), [throttling](docs/throttle_enhancer.md),
+  and many more. New tools are being added all the time!
 
 <br>
 <br>
@@ -61,8 +62,10 @@ At the heart of **Kdux** is the Redux pattern, a well-established approach to ma
 traceable manner. The **Kdux Pattern** revolves around these core principles:
 
 1. **Unidirectional Data Flow:** Data flows in a single direction—actions are dispatched, reducers process them, and the
-   store updates the state. This simplifies the data flow, making the application easier to reason about, debug, and maintain.
-2. **Single Source of Truth:** Your cohesive chunk of state is stored in a single object, which ensures consistency and provides a clear
+   store updates the state. This simplifies the data flow, making the application easier to reason about, debug, and
+   maintain.
+2. **Single Source of Truth:** Your cohesive chunk of state is stored in a single object, which ensures consistency and
+   provides a clear
    and accessible snapshot of the application at any point in time.
 3. **Cohesive State:** You application should group only related state data into the same `Store`/`State` to avoid
    unwieldy state objects and logic. States should only be as large as they are cohesive; meaning you should group as
@@ -247,7 +250,8 @@ Here's a simple example of a `Store` that just manages a "Counter" to track a va
    }
    ```
 
-4. Define your store. This is done using the **Kdux** DSL. This allows you to delegate to a class, or store it in a
+4. Define your store. This is done using the [**Kdux** DSL](docs/dsl.md). This allows you to delegate to a class, or
+   store it in a
    property
    with the same ease.
     ```kotlin
