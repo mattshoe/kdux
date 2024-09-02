@@ -11,7 +11,7 @@ Structured
 Concurrency in your state management while drastically reducing race conditions and making state transitions truly
 deterministic.
 
-The **Kdux** pattern is particularly well-suited to integrate with Android's MVI architecture. **Kdux** and **MVI** are
+The [**Kdux** pattern](#the-kdux-pattern) is particularly well-suited to integrate with Android's [MVI architecture](docs/kdux_mvi.md). **Kdux** and **MVI** are
 both "action-driven" architectures, and so it works wonderfully to help segregate concerns between your view, business,
 and data layers. Check out this [much more in depth discussion on the benefits here](docs/kdux_mvi.md).
 
