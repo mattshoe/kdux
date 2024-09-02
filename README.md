@@ -326,4 +326,3 @@ Contributors are absolutely welcome! Contributions can come in many forms: bug r
 requests, you name it.
 
 See our [Contributing](CONTRIBUTING.md) documentation for how to get started!
-
