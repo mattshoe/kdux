@@ -91,16 +91,14 @@ apart.
 
 **Kdux** emphasizes the use of pure functions within an object-oriented design. Unlike traditional Redux, which is
 heavily rooted in functional programming paradigms, **Kdux** takes a more object-oriented approach while still
-leveraging the benefits of pure functions. 
-
+leveraging the benefits of pure functions.
 
 #### Advantages of Object-Oriented Pure Functions
 
 - **Dependency Injection:** Each component (middleware, store, enhancer, reducer) in **Kdux** can be fully decoupled from 
-  each other and integrated into Dependency Injection (DI) frameworks like Hilt or Dagger. This allows for simplified
-  dependency management, as dependencies are automatically provided by the DI container, rather than manually injecting
-  them at the time of invocation. It keeps each component separated and unrelated to each other until assembled in the
-  store.
+  each other and integrated into Dependency Injection (DI) frameworks like Hilt or Dagger. This frees you from
+  manually injecting them at the time of invocation and keeps each component completely separated and unrelated to each 
+  other until assembled in the store.
 - **Separation of Concerns:** The object-oriented structure encourages a clearer separation of concerns, making it
   easier to maintain and scale the application. Pure functional approaches tend to create extremely large files with 
   poor cohesion, while Object-Oriented approaches focus on discrete classes.
