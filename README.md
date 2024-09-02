@@ -96,10 +96,9 @@ leveraging the benefits of pure functions.
 #### Advantages of Object-Oriented Pure Functions
 
 - **Dependency Injection:** Each component (middleware, store, enhancer, reducer) in **Kdux** can be fully decoupled from 
-  each other and integrated into Dependency Injection (DI) frameworks like Hilt or Dagger. This frees you from
-  manually providing them at the time of invocation and keeps your components completely decoupled from each other. 
-  Functional designs tend to rely on accessing dependencies from outer scopes, which results in monolithic files of 
-  spaghettified logic. Integrating dependencies directly into your components **_significantly_** reduces this problem.
+  each other and integrated into Dependency Injection (DI) frameworks like Hilt or Dagger. Functional designs tend to 
+  rely on accessing dependencies from outer scopes, which results in monolithic files of spaghettified logic. Using Object-Oriented
+  practices to inject dependencies directly into your components **_significantly_** reduces this problem.
 - **Separation of Concerns:** The object-oriented structure encourages a clearer separation of concerns, making it
   easier to maintain and scale the application. Pure functional approaches tend to create extremely large files with 
   poor cohesion, while Object-Oriented approaches focus on discrete classes.
