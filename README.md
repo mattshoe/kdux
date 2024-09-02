@@ -51,7 +51,7 @@ worrying about exceeding memory limits due to enormous state objects.
 - **Integration with MVI**: **Kdux** is particularly well-suited for use in Android applications [using MVI](docs/kdux_mvi.md) (
   Model-View-Intent) architecture.
 - **Extensive Tooling**: The **Kdux** library comes with extensive built-in tooling for you to take advantage of; such
-  as [error reporting](docs/failsafe_enhancer.md), [performance logging](docs/performance_enhancer.md), [authorization](docs/guard_enhancer.md), [timeouts](docs/timeout_enhancer.md), [buffering](docs/buffer_enhancer.md), [debouncing](docs/debounce_enhancer.md), [throttling](docs/throttle_enhancer.md),
+  as [persistence](docs/persistence_enhancer.md), [error reporting](docs/failsafe_enhancer.md), [performance logging](docs/performance_enhancer.md), [authorization](docs/guard_enhancer.md), [timeouts](docs/timeout_enhancer.md), [buffering](docs/buffer_enhancer.md), [debouncing](docs/debounce_enhancer.md), [throttling](docs/throttle_enhancer.md),
   and many more. New tools are being added all the time!
 
 <br>

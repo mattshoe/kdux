@@ -3,6 +3,8 @@ package kdux.dsl
 import kdux.tools.*
 import org.mattshoe.shoebox.kdux.*
 import org.mattshoe.shoebox.kdux.StoreBuilder
+import java.io.InputStream
+import java.io.OutputStream
 import kotlin.time.Duration
 
 /**
@@ -215,5 +217,43 @@ class StoreDslMenu<State: Any, Action: Any>(
      */
     fun timeout(value: Duration) {
         builder.add(TimeoutEnhancer(value))
+    }
+
+    /**
+     * Adds a [PersistenceEnhancer] to the store, enabling automatic persistence and restoration of the store's state.
+     * This function is designed to make it easy to persist and restore the state of your store across application restarts
+     * or other lifecycle events.
+     *
+     * The state is serialized and stored using the provided [serializer], and restored using the [deserializer]. The state
+     * is saved to a file identified by the specified [key]. The [key] should be unique for each store to avoid conflicts.
+     *
+     * ### Important Details:
+     *
+     * The [key] parameter is used to determine the filename or unique identifier for the stored state. You must ensure that the
+     * key is unique if multiple stores are being persisted, to avoid conflicts. The [key] can be used to associate user-data to avoid
+     * exposing the wrong user's data to another, by appending a user-id or otherwise to the key.
+     *
+     * @param key A unique identifier for the persisted state. This is used to determine the filename or key under which the
+     *     state is stored.
+     * @param serializer A suspend function that serializes the state into the provided [OutputStream]. It must write the
+     *     state in a format that can later be deserialized.
+     * @param deserializer A function that deserializes the state from the provided [InputStream]. It must return a state
+     *     object that matches the type of the store's state.
+     * @param onError A function used to notify you when an uncaught error occurs during serialization or deserialization.
+     */
+    fun persist(
+        key: String,
+        serializer: suspend (state: State, outputStream: OutputStream) -> Unit,
+        deserializer: (inputStream: InputStream) -> State,
+        onError: (state: State?, error: Throwable) -> Unit = { _, _ -> }
+    ) {
+        builder.add(
+            PersistenceEnhancer(
+                key,
+                serializer,
+                deserializer,
+                onError
+            )
+        )
     }
 }
