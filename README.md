@@ -234,7 +234,7 @@ Add the dependency for **Kdux** to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("com.mattshoe.shoebox:Kdux:1.0.5")
+    implementation("org.mattshoe.shoebox:Kdux:1.0.6")
 }
 ```
 

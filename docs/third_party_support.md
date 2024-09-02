@@ -16,7 +16,7 @@ Kdux supports Kotlinx Serialization for its [State Persistence](persistence_enha
 #### Dependency
 ```kotlin
 dependencies {
-    implementation("com.mattshoe.shoebox:Kdux.kotlinx-serialization:1.0.5")
+    implementation("org.mattshoe.shoebox:Kdux.kotlinx-serialization:1.0.6")
 }
 ```
 #### Usage
@@ -42,7 +42,7 @@ Kdux supports Kotlinx Serialization for its [State Persistence](persistence_enha
 #### Dependency
 ```kotlin
 dependencies {
-    implementation("com.mattshoe.shoebox:Kdux.gson:1.0.5")
+    implementation("org.mattshoe.shoebox:Kdux.gson:1.0.6")
 }
 ```
 #### Usage
