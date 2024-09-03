@@ -149,9 +149,9 @@ managing race conditions and ensuring that state updates occur in a predictable 
 
 - **Synchronous Dispatch by Default:** Dispatch operations are not asynchronous by default. When an action is
   dispatched, it is processed sequentially and predictably within the current coroutine context. Each of its middleware
-  and enhancers also obey structured concurrency consequently. This synchronous behavior allows you to ensure that each
-  action is fully processed before the next one begins if you wish to, eliminating race conditions and making state
-  transitions more predictable.
+  and enhancers also obey structured concurrency consequently. This synchronous behavior allows you to (if you wish to do so) 
+  ensure that each action is fully processed before the next one begins; eliminating race conditions and 
+  making state transitions significantly more predictable.
 - **Structured Concurrency:** **Kdux** leverages Kotlin’s structured concurrency to ensure that all state transitions
   and side effects are managed within a defined scope. This means that dispatch operations are always predictable and
   occur
