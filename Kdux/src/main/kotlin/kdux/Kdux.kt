@@ -1,7 +1,10 @@
 package kdux
 
 import kdux.tools.PerformanceData
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 import org.mattshoe.shoebox.kdux.Store
+import java.io.File
 
 /**
  * Configures global settings for the Kdux library using the provided configuration block.
@@ -20,6 +23,43 @@ class KduxMenu {
         internal val performanceMonitors = mutableListOf<(PerformanceData<*>) -> Unit>()
         internal val globalGuards = mutableListOf<suspend (Any) -> Boolean>()
         internal val globalErrorHandlers = mutableListOf<suspend (Any, Any, Throwable) -> Unit>()
+        internal lateinit var globalCoroutineScope: CoroutineScope
+        internal lateinit var cacheDirectory: File
+
+        private fun isGlobalCoroutineScopeInitialed() = ::globalCoroutineScope.isInitialized
+    }
+
+    /**
+     * Sets the global [CoroutineScope] to the provided [coroutineScope].
+     * If a global coroutine scope is already initialized, it will cancel the existing CoroutineScope before setting
+     * the new one.
+     *
+     * @param coroutineScope The new [CoroutineScope] to be used globally.
+     */
+    fun coroutineScope(coroutineScope: CoroutineScope) {
+        if (isGlobalCoroutineScopeInitialed()) {
+            globalCoroutineScope.cancel()
+        }
+        globalCoroutineScope = coroutineScope
+    }
+
+    /**
+     * Cancels the currently active global [CoroutineScope].
+     * This stops any ongoing coroutines within the global scope.
+     */
+    fun cancelCoroutineScope() {
+        globalCoroutineScope.cancel()
+    }
+
+    /**
+     * Sets the global cache directory to the specified [cacheDir].
+     *
+     * This is the directory where any automatically persisted `State` objects will be written to.
+     *
+     * @param cacheDir The [File] representing the new cache directory to be used globally.
+     */
+    fun cacheDir(cacheDir: File) {
+        cacheDirectory = cacheDir
     }
 
     /**

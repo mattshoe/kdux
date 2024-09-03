@@ -61,6 +61,17 @@ val store = kdux.store(
 
     // Add custom enhancers
     add(MyEnhancer(), AnotherEnhancer())
+    
+    // Add persistence to automatically restore state across app starts
+    persist(
+        key = "myGloballyUniqueKey-${userId}",
+        serializer = { state, outputStream ->
+            serialize(state, outputStream)
+        },
+        deserializer = { inputStream ->
+            deserialize(inputStream)
+        }
+    )
 
     // Block actions that fail an authorization check
     guard { action ->

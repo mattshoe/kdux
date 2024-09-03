@@ -3,4 +3,5 @@ plugins {
 }
 rootProject.name = "Kdux.Project"
 include("Kdux")
-include("Kdux")
+include("Kdux.kotlinx-serialization")
+include("Kdux.gson")
