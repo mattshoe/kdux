@@ -26,6 +26,7 @@ worrying about exceeding memory limits due to enormous state objects.
 ## Table of Contents
 
 - [The **Kdux** Pattern](#the-kdux-pattern)
+- [Third Party Integration](docs/third_party_support.md)
 - [Getting Started](#getting-started)
     - [Installation](#installation)
     - [Basic Usage](#basic-usage)
@@ -324,6 +325,7 @@ specific needs.
 
 - [DSL Guide](docs/dsl.md)
 - [Using **Kdux** with MVI](docs/kdux_mvi.md)
+- [Third Party Integration](docs/third_party_support.md)
 - [Testing](docs/testing.md)
 - [Middleware](docs/middleware.md)
 - [Enhancer](docs/enhancer.md)
