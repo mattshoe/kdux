@@ -1,6 +1,7 @@
 package kdux.tools
 
 import kdux.KduxMenu
+import kdux.caching.CacheUtility
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
@@ -127,7 +128,7 @@ class PersistenceEnhancer<State : Any, Action : Any>(
             }
 
             private val persistentCacheLocation: String
-                get() = "${KduxMenu.cacheDirectory}/${key}.kdux"
+                get() = CacheUtility.cacheLocation(key)
         }
     }
 
