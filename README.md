@@ -5,11 +5,12 @@ optimized to take advantage of all the great features modern Kotlin has to offer
 built-in
 coroutines support, you get all the benefits of Kotlin.
 
-**Kdux** takes a **_new, more practical approach_** to the [Redux](https://redux.js.org/tutorials/fundamentals/part-1-overview) pattern by moving away from the monolithic architecture of a Global State
-used by traditional Redux, and by enforcing sequential-by-default behavior of dispatches. This strongly enforces
-Structured
-Concurrency in your state management while drastically reducing race conditions and making state transitions truly
-deterministic.
+**Kdux** enhances the [Redux](https://redux.js.org/tutorials/fundamentals/part-1-overview) pattern in a few ways: by moving away from the monolithic architecture of a Global State
+used by traditional Redux, by enforcing sequential-by-default behavior of dispatches, and by merging functional programming concepts with the benefits of OOP. 
+
+These enhancements strongly enforce
+Structured Concurrency in your state management while drastically reducing race conditions, making state transitions truly
+deterministic, and reducing the cognitive load of traditional Redux. 
 
 The [**Kdux** pattern](#the-kdux-pattern) is particularly well-suited to integrate with
 Android's [MVI architecture](docs/kdux_mvi.md). **Kdux** and **MVI** are
