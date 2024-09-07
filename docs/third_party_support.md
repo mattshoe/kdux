@@ -25,11 +25,11 @@ dependencies {
 #### Usage
 
 ```kotlin
-// Configure Kdux globally to integrate with Android
+// Configure Kdux globally to integrate with Android. Leverage LogCat, Parcelable, on-device caching, and more
 class MyApplication: Application() {
     override fun onCreate() {
         kdux { 
-            android(this@MyApplication)
+           android(this@MyApplication)
         }
     }
 }
@@ -39,7 +39,7 @@ val store = kdux.store(
     initialValue = MyState(),
     reducer = MyReducer()
 ) {
-    persistWithParcelable(key = "myGloballyUniqueKey") { state, error ->
+    persistAsParcelable(key = "myGloballyUniqueKey") { state, error ->
         // handle error
     }
 }
