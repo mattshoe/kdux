@@ -39,7 +39,7 @@ val store = kdux.store(
     initialValue = MyState(),
     reducer = MyReducer()
 ) {
-    persistWithParcelable(key = "myGloballyUniqueKey") { state, error ->
+    persistAsParcelable(key = "myGloballyUniqueKey") { state, error ->
         // handle error
     }
 }
