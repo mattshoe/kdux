@@ -336,6 +336,7 @@ specific needs.
 
 ### Tools
 
+- [PersistenceEnhancer](docs/persistence_enhancer.md)
 - [LoggingEnhancer](docs/logging_enhancer.md)
 - [GuardEnhancer](docs/guard_enhancer.md)
 - [FailSafeEnhancer](docs/failsafe_enhancer.md)
