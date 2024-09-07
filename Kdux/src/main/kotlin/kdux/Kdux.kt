@@ -1,6 +1,8 @@
 package kdux
 
 import kdux.caching.CacheUtility
+import kdux.log.KduxLogger
+import kdux.log.Logger
 import kdux.tools.PerformanceData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
@@ -124,8 +126,17 @@ class KduxMenu {
      *
      * @param logger A function that logs each action dispatched.
      */
-    fun globalLogger(logger: (Any) -> Unit) {
+    fun globalActionLogger(logger: (Any) -> Unit) {
         loggers.add(logger)
+    }
+
+    /**
+     * Adds a global [KduxLogger] to handle all types of messages printed by Kdux.
+     *
+     * @param logger A [KduxLogger] that logs any messages printed by Kdux.
+     */
+    fun globalLogger(logger: KduxLogger) {
+        Logger.set(logger)
     }
 
     /**

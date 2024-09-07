@@ -2,6 +2,7 @@ package kdux.tools
 
 import kdux.KduxMenu
 import kdux.caching.CacheUtility
+import kdux.log.Logger
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
@@ -43,7 +44,7 @@ class PersistenceEnhancer<State : Any, Action : Any>(
     private val key: String,
     private val serializer: suspend (state: State, outputStream: OutputStream) -> Unit,
     private val deserializer: (inputStream: InputStream) -> State,
-    private val onError: (state: State?, error: Throwable) -> Unit = { s, e -> println("Error while processing $s: $e")},
+    private val onError: (state: State?, error: Throwable) -> Unit = { s, e -> Logger.get().e("Error while processing $s", e) },
     private val fileProvider: (String) -> File = { File(it) },
     private val inputStreamProvider: (File) -> InputStream = { it.inputStream() },
     private val outputStreamProvider: (String) -> OutputStream = { FileOutputStream(it, false) },
