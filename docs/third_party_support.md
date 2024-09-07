@@ -25,11 +25,11 @@ dependencies {
 #### Usage
 
 ```kotlin
-// Configure Kdux globally to integrate with Android
+// Configure Kdux globally to integrate with Android. Leverage LogCat, Parcelable, on-device caching, and more
 class MyApplication: Application() {
     override fun onCreate() {
         kdux { 
-            android(this@MyApplication)
+           android(this@MyApplication)
         }
     }
 }
