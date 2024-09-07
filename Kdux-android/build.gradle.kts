@@ -2,6 +2,7 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("maven-publish")
+    id("kotlin-parcelize")
     signing
 }
 
@@ -33,9 +34,13 @@ android {
 
 dependencies {
     implementation(project(":Kdux"))
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("com.android.support.test:runner:1.0.2")
-    androidTestImplementation("com.android.support.test.espresso:espresso-core:3.0.2")
+
+    testImplementation(kotlin("test"))
+    testImplementation("com.google.truth:truth:1.4.4")
+    testImplementation("app.cash.turbine:turbine:1.1.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0-RC.2")
+    testImplementation("io.mockk:mockk:1.13.12")
+    testImplementation("org.robolectric:robolectric:4.13")
 }
 
 val GROUP_ID: String = project.properties["group.id"].toString()
