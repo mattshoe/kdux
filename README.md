@@ -336,16 +336,16 @@ specific needs.
 
 ### Tools
 
-- [PersistenceEnhancer](docs/persistence_enhancer.md)
-- [LoggingEnhancer](docs/logging_enhancer.md)
-- [GuardEnhancer](docs/guard_enhancer.md)
-- [FailSafeEnhancer](docs/failsafe_enhancer.md)
-- [TimeoutEnhancer](docs/timeout_enhancer.md)
-- [PerformanceEnhancer](docs/performance_enhancer.md)
-- [BufferEnhancer](docs/buffer_enhancer.md)
-- [DebounceEnhancer](docs/debounce_enhancer.md)
-- [ThrottleEnhancer](docs/throttle_enhancer.md)
-- [BatchEnhancer](docs/batch_enhancer.md)
+- [Persistence](docs/persistence_enhancer.md)
+- [Logging](docs/logging_enhancer.md)
+- [Authorization](docs/guard_enhancer.md)
+- [Error Handling](docs/failsafe_enhancer.md)
+- [Timeout](docs/timeout_enhancer.md)
+- [Performance Monitoring](docs/performance_enhancer.md)
+- [Buffer](docs/buffer_enhancer.md)
+- [Debounce](docs/debounce_enhancer.md)
+- [Throttle](docs/throttle_enhancer.md)
+- [Batch](docs/batch_enhancer.md)
 
 <br>
 <br>
