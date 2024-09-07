@@ -3,6 +3,9 @@
 # Define the array of project names
 projects=(
   "Kdux"
+  "Kdux-android"
+  "Kdux-gson"
+  "Kdux-kotlinx-serialization"
 )
 
 set -e

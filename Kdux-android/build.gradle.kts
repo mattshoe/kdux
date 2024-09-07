@@ -1,33 +1,48 @@
 plugins {
-    kotlin("jvm")
+    id("com.android.library")
+    id("org.jetbrains.kotlin.android")
     id("maven-publish")
     signing
 }
 
+android {
+    namespace = "com.example.kdux.android"
+    compileSdk = 34
+
+    defaultConfig {
+        minSdk = 24
+
+        testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles("consumer-rules.pro")
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0-RC.2")
-    testImplementation(kotlin("test"))
-    testImplementation("com.google.truth:truth:1.4.4")
-    testImplementation("app.cash.turbine:turbine:1.1.0")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0-RC.2")
-    testImplementation("io.mockk:mockk:1.13.12")
+
+    implementation("com.android.support:appcompat-v7:28.0.0")
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("com.android.support.test:runner:1.0.2")
+    androidTestImplementation("com.android.support.test.espresso:espresso-core:3.0.2")
 }
 
 val GROUP_ID: String = project.properties["group.id"].toString()
 val VERSION: String = project.properties["version"].toString()
-val ARTIFACT_ID: String = "Kdux"
-val PUBLICATION_NAME = "Kdux"
-
-kotlin {
-    jvmToolchain(17)
-}
-
-plugins.withId("java") {
-    java {
-        withJavadocJar()
-        withSourcesJar()
-    }
-}
+val ARTIFACT_ID: String = "Kdux-android"
+val PUBLICATION_NAME = "KduxAndroid"
 
 afterEvaluate {
     plugins.withId("maven-publish") {
@@ -47,15 +62,15 @@ afterEvaluate {
                 }
 
                 create<MavenPublication>(PUBLICATION_NAME) {
-                    from(components["java"])
+                    from(components["release"])
                     groupId = GROUP_ID
                     artifactId = ARTIFACT_ID
                     version = VERSION
                     pom {
                         name = "Kdux"
                         description = """
-                                Kdux is a Kotlin-based, platform-agnostic state management library that implements the Redux pattern, 
-                                providing structured concurrency with built-in coroutine support. It is designed to integrate seamlessly 
+                                Kdux is a Kotlin-based, platform-agnostic state management library that implements the Redux pattern,
+                                providing structured concurrency with built-in coroutine support. It is designed to integrate seamlessly
                                 with any Kotlin project, particularly excelling in Android applications using MVI architecture.
                             """.trimIndent()
                         url = "https://github.com/mattshoe/kdux"
@@ -82,6 +97,18 @@ afterEvaluate {
                             developerConnection = "scm:git:git@github.com:mattshoe/kdux.git"
                             url = "https://github.com/mattshoe/kdux"
                         }
+
+//                        withXml {
+//                            val dependenciesNode = asNode().appendNode("dependencies")
+//                            configurations.getByName("implementation") {
+//                                dependencies.forEach {
+//                                    val dependencyNode = dependenciesNode.appendNode("dependency")
+//                                    dependencyNode.appendNode("groupId", it.group)
+//                                    dependencyNode.appendNode("artifactId", it.name)
+//                                    dependencyNode.appendNode("version", it.version)
+//                                }
+//                            }
+//                        }
                     }
                 }
 

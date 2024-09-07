@@ -1,5 +1,6 @@
 package kdux
 
+import kdux.caching.CacheUtility
 import kdux.tools.PerformanceData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
@@ -24,7 +25,6 @@ class KduxMenu {
         internal val globalGuards = mutableListOf<suspend (Any) -> Boolean>()
         internal val globalErrorHandlers = mutableListOf<suspend (Any, Any, Throwable) -> Unit>()
         internal lateinit var globalCoroutineScope: CoroutineScope
-        internal lateinit var cacheDirectory: File
 
         private fun isGlobalCoroutineScopeInitialed() = ::globalCoroutineScope.isInitialized
     }
@@ -56,10 +56,21 @@ class KduxMenu {
      *
      * This is the directory where any automatically persisted `State` objects will be written to.
      *
+     * @param cacheDir The path [String] representing the new cache directory to be used globally.
+     */
+    fun cacheDir(cacheDir: String) {
+        cacheDir(File(cacheDir))
+    }
+
+    /**
+     * Sets the global cache directory to the specified [cacheDir].
+     *
+     * This is the directory where any automatically persisted `State` objects will be written to.
+     *
      * @param cacheDir The [File] representing the new cache directory to be used globally.
      */
     fun cacheDir(cacheDir: File) {
-        cacheDirectory = cacheDir
+        CacheUtility.setCacheDirectory(cacheDir)
     }
 
     /**
