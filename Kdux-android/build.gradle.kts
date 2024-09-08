@@ -71,11 +71,10 @@ afterEvaluate {
                     artifactId = ARTIFACT_ID
                     version = VERSION
                     pom {
-                        name = "Kdux"
+                        name = "Kdux-android"
                         description = """
-                                Kdux is a Kotlin-based, platform-agnostic state management library that implements the Redux pattern,
-                                providing structured concurrency with built-in coroutine support. It is designed to integrate seamlessly
-                                with any Kotlin project, particularly excelling in Android applications using MVI architecture.
+                                Kdux-android is an add-on to the Kdux library to add built-in support for the Android platform to leverage
+                                its various tools and SDK offerings..
                             """.trimIndent()
                         url = "https://github.com/mattshoe/kdux"
                         properties = mapOf(

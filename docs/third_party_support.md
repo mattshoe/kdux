@@ -9,7 +9,7 @@ you can keep your application size as small as possible.
 <br>
 <br>
 
-## Android SDK
+# Android
 
 Kdux provides full integration with the Android SDK, leveraging LogCat, on-device caching, `Parcelable` serialization,
 `WorkManager` integration, and all other relevant features of the Android platform.
@@ -18,7 +18,7 @@ Kdux provides full integration with the Android SDK, leveraging LogCat, on-devic
 
 ```kotlin
 dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-android:1.0.8")
+    implementation("org.mattshoe.shoebox:Kdux-android:1.0.9")
 }
 ```
 
@@ -45,18 +45,14 @@ val store = kdux.store(
 }
 ```
 
-
-<br>
-<br>
-
-## Room
+### Room
 
 Kdux supports using [Room](https://developer.android.com/training/data-storage/room) for its [State Persistence](persistence_enhancer.md) functionality.
 
 #### Dependency
 ```kotlin
 dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-room:1.0.8")
+    implementation("org.mattshoe.shoebox:Kdux-room:1.0.9")
 }
 ```
 
@@ -76,18 +72,14 @@ val store = kdux.store(
 }
 ```
 
-
-<br>
-<br>
-
-## Realm
+### Realm
 
 Kdux supports using [Realm](https://github.com/realm/realm-java) for its [State Persistence](persistence_enhancer.md) functionality.
 
 #### Dependency
 ```kotlin
 dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-realm:1.0.8")
+    implementation("org.mattshoe.shoebox:Kdux-realm:1.0.9")
 }
 ```
 
@@ -107,9 +99,11 @@ val store = kdux.store(
 }
 ```
 
+<br>
+<br>
 
-<br>
-<br>
+# Serialization
+
 
 ## Kotlinx Serialization
 
@@ -118,7 +112,7 @@ Kdux supports [Kotlinx Serialization](https://github.com/Kotlin/kotlinx.serializ
 #### Dependency
 ```kotlin
 dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-kotlinx-serialization:1.0.8")
+    implementation("org.mattshoe.shoebox:Kdux-kotlinx-serialization:1.0.9")
 }
 ```
 
@@ -137,9 +131,6 @@ val store = kdux.store(
 }
 ```
 
-<br>
-<br>
-
 ## Gson
 
 Kdux supports [Gson](https://github.com/google/gson) for its [State Persistence](persistence_enhancer.md) functionality.
@@ -147,7 +138,7 @@ Kdux supports [Gson](https://github.com/google/gson) for its [State Persistence]
 #### Dependency
 ```kotlin
 dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-gson:1.0.8")
+    implementation("org.mattshoe.shoebox:Kdux-gson:1.0.9")
 }
 ```
 
@@ -166,9 +157,6 @@ val store = kdux.store(
 }
 ```
 
-<br>
-<br>
-
 ## ProtoBuf
 
 Kdux supports Google's [ProtoBuf](https://github.com/square/moshi) serialization for its [State Persistence](persistence_enhancer.md) functionality.
@@ -176,7 +164,7 @@ Kdux supports Google's [ProtoBuf](https://github.com/square/moshi) serialization
 #### Dependency
 ```kotlin
 dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-protobuf:1.0.8")
+    implementation("org.mattshoe.shoebox:Kdux-protobuf:1.0.9")
 }
 ```
 
@@ -195,9 +183,6 @@ val store = kdux.store(
 }
 ```
 
-<br>
-<br>
-
 ## Moshi
 
 Kdux supports [Moshi](https://github.com/square/moshi) for its [State Persistence](persistence_enhancer.md) functionality.
@@ -205,7 +190,7 @@ Kdux supports [Moshi](https://github.com/square/moshi) for its [State Persistenc
 #### Dependency
 ```kotlin
 dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-moshi:1.0.8")
+    implementation("org.mattshoe.shoebox:Kdux-moshi:1.0.9")
 }
 ```
 
@@ -224,11 +209,6 @@ val store = kdux.store(
 }
 ```
 
-
-
-<br>
-<br>
-
 ## Jackson
 
 Kdux supports [Jackson](https://github.com/FasterXML/jackson-module-kotlin) serialization for its [State Persistence](persistence_enhancer.md) functionality.
@@ -236,7 +216,7 @@ Kdux supports [Jackson](https://github.com/FasterXML/jackson-module-kotlin) seri
 #### Dependency
 ```kotlin
 dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-jackson:1.0.8")
+    implementation("org.mattshoe.shoebox:Kdux-jackson:1.0.9")
 }
 ```
 
