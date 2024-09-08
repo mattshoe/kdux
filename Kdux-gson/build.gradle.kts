@@ -2,10 +2,13 @@ plugins {
     kotlin("jvm")
     id("maven-publish")
     signing
+    kotlin("plugin.serialization") version "1.9.0" apply true
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0-RC.2")
+    implementation(project(":Kdux"))
+    implementation("com.google.code.gson:gson:2.11.0")
+
     testImplementation(kotlin("test"))
     testImplementation("com.google.truth:truth:1.4.4")
     testImplementation("app.cash.turbine:turbine:1.1.0")
@@ -15,8 +18,8 @@ dependencies {
 
 val GROUP_ID: String = project.properties["group.id"].toString()
 val VERSION: String = project.properties["version"].toString()
-val ARTIFACT_ID: String = "Kdux"
-val PUBLICATION_NAME = "Kdux"
+val ARTIFACT_ID: String = "Kdux-gson"
+val PUBLICATION_NAME = "KduxGson"
 
 kotlin {
     jvmToolchain(17)

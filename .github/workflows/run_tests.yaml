@@ -35,16 +35,30 @@ jobs:
           max_attempts: 3
           command: ./gradlew clean test
 
-      - name: Test Results for Kernl.Annotations
+      - name: Kdux Test Results
         if: always() 
         uses: actions/upload-artifact@v4
         with:
-          name: Kernl.Annotations Test Results
-          path: Kernl.Annotations/build/reports/tests/test/**
+          name: Kdux Test Results
+          path: Kdux/build/reports/tests/test/**
 
-      - name: Test Results
-        if: always() 
+      - name: Kdux-android Test Results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Kernl.Common Test Results
-          path: build/reports/tests/test/**
+          name: Kdux-android Test Results
+          path: Kdux-android/build/reports/tests/test/**
+
+      - name: Kdux-gson Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kdux-gson Test Results
+          path: Kdux-gson/build/reports/tests/test/**
+
+      - name: Kdux-kotlinx-serialization Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kdux-kotlinx-serialization Test Results
+          path: Kdux-kotlinx-serialization/build/reports/tests/test/**

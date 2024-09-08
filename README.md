@@ -5,11 +5,12 @@ optimized to take advantage of all the great features modern Kotlin has to offer
 built-in
 coroutines support, you get all the benefits of Kotlin.
 
-**Kdux** takes a **_new, more practical approach_** to the [Redux](https://redux.js.org/tutorials/fundamentals/part-1-overview) pattern by moving away from the monolithic architecture of a Global State
-used by traditional Redux, and by enforcing sequential-by-default behavior of dispatches. This strongly enforces
-Structured
-Concurrency in your state management while drastically reducing race conditions and making state transitions truly
-deterministic.
+**Kdux** enhances the [Redux](https://redux.js.org/tutorials/fundamentals/part-1-overview) pattern in a few ways: by moving away from the monolithic architecture of a Global State
+used by traditional Redux, by enforcing sequential-by-default behavior of dispatches, and by merging functional programming concepts with the benefits of OOP. 
+
+These enhancements strongly enforce
+Structured Concurrency in your state management while drastically reducing race conditions, making state transitions truly
+deterministic, and reducing the cognitive load of traditional Redux. 
 
 The [**Kdux** pattern](#the-kdux-pattern) is particularly well-suited to integrate with
 Android's [MVI architecture](docs/kdux_mvi.md). **Kdux** and **MVI** are
@@ -66,18 +67,18 @@ traceable manner. The **Kdux Pattern** revolves around these core principles:
 1. **Unidirectional Data Flow:** Data flows in a single direction—actions are dispatched, reducers process them, and the
    store updates the state. This simplifies the data flow, making the application easier to reason about, debug, and
    maintain.
-2. **Single Source of Truth:** Your cohesive chunk of state is stored in a single object, which ensures consistency and
-   provides a clear and accessible snapshot of the application at any point in time.
-3. **Cohesive State:** You application should group only related state data into the same `Store`/`State` to avoid
+2. **Cohesive State:** You application should group only related state data into the same `Store`/`State` to avoid
    unwieldy state objects and logic. States should only be as large as they are cohesive; meaning you should group as
    much related State together as you can, but not unrelated states.
-4. **Read-Only State:** The state cannot be modified directly. Instead, actions are dispatched to indicate the intent
-   to change the state. This ensures that all state transitions are explicit, traceable, and follow a predictable flow.
-5. **Object-Oriented**: While traditional Redux focuses on functional programming, **Kdux** integrates
+3. **Object-Oriented**: While traditional Redux focuses on functional programming, **Kdux** integrates
    the principles of functional programming into an object-oriented design. This approach allows for better code reuse,
    reduces cognitive load, and encourages a strong separation of concerns. By using pure functions within an
    object-oriented structure, **Kdux** leverages the predictability and simplicity of functional programming while
    maintaining the modularity and scalability of object-oriented design.
+4. **Read-Only State:** The state cannot be modified directly. Instead, actions are dispatched to indicate the intent
+   to change the state. This ensures that all state transitions are explicit, traceable, and follow a predictable flow.
+5. **Single Source of Truth:** Your cohesive chunk of state is stored in a single object, which ensures consistency and
+   provides a clear and accessible snapshot of the application at any point in time.
 
 #### How **Kdux** Differs from Traditional Redux
 
@@ -235,7 +236,7 @@ Add the dependency for **Kdux** to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("org.mattshoe.shoebox:Kdux:1.0.6")
+    implementation("org.mattshoe.shoebox:Kdux:1.0.8")
 }
 ```
 
@@ -335,15 +336,16 @@ specific needs.
 
 ### Tools
 
-- [LoggingEnhancer](docs/logging_enhancer.md)
-- [GuardEnhancer](docs/guard_enhancer.md)
-- [FailSafeEnhancer](docs/failsafe_enhancer.md)
-- [TimeoutEnhancer](docs/timeout_enhancer.md)
-- [PerformanceEnhancer](docs/performance_enhancer.md)
-- [BufferEnhancer](docs/buffer_enhancer.md)
-- [DebounceEnhancer](docs/debounce_enhancer.md)
-- [ThrottleEnhancer](docs/throttle_enhancer.md)
-- [BatchEnhancer](docs/batch_enhancer.md)
+- [Persistence](docs/persistence_enhancer.md)
+- [Logging](docs/logging_enhancer.md)
+- [Authorization](docs/guard_enhancer.md)
+- [Error Handling](docs/failsafe_enhancer.md)
+- [Timeout](docs/timeout_enhancer.md)
+- [Performance Monitoring](docs/performance_enhancer.md)
+- [Buffer](docs/buffer_enhancer.md)
+- [Debounce](docs/debounce_enhancer.md)
+- [Throttle](docs/throttle_enhancer.md)
+- [Batch](docs/batch_enhancer.md)
 
 <br>
 <br>

@@ -2,7 +2,6 @@ package kdux
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import kdux.tools.FailSafeEnhancerTest
 import kdux.tools.PerformanceData
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -110,7 +109,7 @@ class KduxGlobalTest {
     fun globalLogger() = runTest {
         val logs = mutableListOf<Any>()
         kdux {
-            globalLogger { logs.add(it) }
+            globalActionLogger { logs.add(it) }
         }
 
         val store = kdux.store<Int, Int>(

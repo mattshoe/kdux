@@ -30,7 +30,7 @@ val store = kdux.store(
     initialState = MyState(),
     reducer = MyReducer()
 ) {
-    persisted(
+    persist(
         key = "myGloballyUniqueKey-${userId}",
         serializer = { state, outputStream -> /* Serialize state to be written to storage */ },
         deserializer = { inputStream -> /* Deserialize the inputStream into the proper state */ }
