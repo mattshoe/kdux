@@ -2,12 +2,14 @@ plugins {
     kotlin("jvm")
     id("maven-publish")
     signing
-    kotlin("plugin.serialization") version "1.9.0" apply true
 }
+
+group = "org.mattshoe.shoebox"
+version = "1.0.7"
 
 dependencies {
     implementation(project(":Kdux"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2")
+    implementation("com.squareup.moshi:moshi-kotlin:1.15.1")
 
     testImplementation(kotlin("test"))
     testImplementation("com.google.truth:truth:1.4.4")
@@ -18,8 +20,8 @@ dependencies {
 
 val GROUP_ID: String = project.properties["group.id"].toString()
 val VERSION: String = project.properties["version"].toString()
-val ARTIFACT_ID: String = "Kdux-kotlinx-serialization"
-val PUBLICATION_NAME = "KduxKotlinxSerialization"
+val ARTIFACT_ID: String = "Kdux-moshi"
+val PUBLICATION_NAME = "KduxMoshi"
 
 kotlin {
     jvmToolchain(17)
@@ -55,9 +57,9 @@ afterEvaluate {
                     artifactId = ARTIFACT_ID
                     version = VERSION
                     pom {
-                        name = "Kdux-kotlinx-serialization"
+                        name = "Kdux-moshi"
                         description = """
-                                Kdux-kotlinx-serialization is an add-on to the Kdux library to add built-in support for Kotlinx Serialization serialization.
+                                Kdux-moshi is an add-on to the Kdux library to add built-in support for Moshi serialization.
                             """.trimIndent()
                         url = "https://github.com/mattshoe/kdux"
                         properties = mapOf(
