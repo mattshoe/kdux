@@ -27,6 +27,6 @@
   <extensions defaultExtensionNs="com.intellij">
     <toolWindow id="Kdux DevTools"
                 anchor="left"
-                factoryClass="org.mattshoe.shoebox.kduxdevtoolsplugin.DevToolsWindowFactory"/>
+                factoryClass="org.mattshoe.shoebox.kduxdevtoolsplugin.ui.DevToolsWindowFactory"/>
   </extensions>
 </idea-plugin>
