@@ -23,6 +23,7 @@ dependencies {
   implementation("ch.qos.logback:logback-classic:1.5.6")
   implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.12")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2")
+  implementation("io.github.oleksandrbalan:lazytable:1.8.0")
 }
 
 // Configure Gradle IntelliJ Plugin
