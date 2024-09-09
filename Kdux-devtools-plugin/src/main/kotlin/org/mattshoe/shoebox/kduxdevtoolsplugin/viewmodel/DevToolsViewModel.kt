@@ -6,6 +6,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.json.Json
 import org.mattsho.shoebox.devtools.common.DispatchRequest
 import org.mattsho.shoebox.devtools.common.DispatchResult
 import org.mattshoe.shoebox.kduxdevtoolsplugin.server.*
@@ -27,10 +28,8 @@ interface ViewModel<State: Any, UserIntent: Any> {
 
 sealed interface State {
     data object Stopped: State
-    data class Debugging(
-        val storeName: String,
-        val paused: Boolean
-    ): State
+    data class Debugging(val storeName: String): State
+    data class Paused(val storeName: String): State
 }
 
 sealed interface UserIntent {
@@ -40,6 +39,7 @@ sealed interface UserIntent {
     data class NextDispatch(val storeName: String): UserIntent
     data class PreviousDispatch(val storeName: String): UserIntent
     data class ReplayDispatch(val storeName: String, val dispatchId: String): UserIntent
+    data class DispatchOverride(val storeName: String, val text: String): UserIntent
 }
 
 class DevToolsViewModel(
@@ -53,12 +53,14 @@ class DevToolsViewModel(
     private val dispatchLogMutex = Mutex()
     private val _registeredStores = mutableListOf<Registration>()
     private val _registrationStream = MutableStateFlow(emptyList<Registration>())
+    private val _debugStream = MutableSharedFlow<DispatchRequest>(replay = 1)
     private val registrationMutex = Mutex()
 
 
     override val state = _state.asStateFlow()
     val dispatchStream: Flow<List<DispatchLog>> = _dispatchStream.asSharedFlow()
     val registrationStream: Flow<List<Registration>> = _registrationStream.asStateFlow()
+    val debugStream: Flow<DispatchRequest?> = _debugStream.asSharedFlow()
 
     init {
         server.dispatchRequestStream
@@ -90,10 +92,7 @@ class DevToolsViewModel(
             is UserIntent.StartDebugging -> {
                 server.start()
                 _state.update {
-                    State.Debugging(
-                        intent.storeName,
-                        false
-                    )
+                    State.Debugging(intent.storeName)
                 }
             }
             is UserIntent.StopDebugging -> {
@@ -105,10 +104,7 @@ class DevToolsViewModel(
             is UserIntent.PauseDebugging -> {
                 server.send(Command.Pause(intent.storeName))
                 _state.update {
-                    State.Debugging(
-                        intent.storeName,
-                        true
-                    )
+                    State.Paused(intent.storeName)
                 }
             }
             is UserIntent.NextDispatch -> {
@@ -119,6 +115,11 @@ class DevToolsViewModel(
             }
             is UserIntent.ReplayDispatch -> {
                 server.send(Command.ReplayDispatch(intent.storeName, intent.dispatchId))
+            }
+            is UserIntent.DispatchOverride -> {
+                server.send(
+                    Command.DispatchOverride(intent.storeName, Json.decodeFromString(intent.text))
+                )
             }
         }
     }

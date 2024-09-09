@@ -1,10 +1,10 @@
 package org.mattshoe.shoebox.kduxdevtoolsplugin.ui
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
@@ -13,7 +13,9 @@ import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
@@ -23,6 +25,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.DevToolsViewModel
 import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.DispatchLog
 import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.State
@@ -37,7 +42,10 @@ fun DevToolsScreen(
     Column {
         when (state) {
             is State.Stopped -> StoreNameInput(viewModel)
-            is State.Debugging -> DebugWindow((state as State.Debugging).storeName, viewModel)
+            is State.Debugging, is State.Paused -> {
+                val storeName = (state as? State.Debugging)?.storeName ?: (state as State.Paused).storeName
+                DebugWindow(storeName, viewModel)
+            }
         }
         DispatchLogList(dispatchLog)
     }
@@ -82,15 +90,17 @@ fun StoreNameInput(
     }
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 @Composable
 fun DebugWindow(
     storeName: String,
     viewModel: DevToolsViewModel
 ) {
     val isPaused by derivedStateOf {
-        val currentState = viewModel.state.value
-        currentState is State.Debugging && currentState.paused
+        viewModel.state.value is State.Paused
     }
+    val incomingDispatch by viewModel.debugStream.collectAsState(null)
+    val isDisabled by derivedStateOf { incomingDispatch == null }
 
     Column {
         Row(
@@ -130,7 +140,156 @@ fun DebugWindow(
             }
         }
 
+
+        SectionTitle(
+            modifier = Modifier.padding(end = 4.dp),
+            title = "Incoming Dispatch Request"
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .alpha(if (isDisabled) 0.4f else 1f)  // Reduce opacity when disabled
+                .pointerInput(isDisabled) {  // Block input if disabled
+                    if (isDisabled) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                awaitPointerEvent()  // Consume all touch events
+                            }
+                        }
+                    }
+                }
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(400.dp),
+                verticalAlignment = Alignment.Bottom,
+            ) {
+
+                Column(
+                    Modifier.fillMaxHeight()
+                ) {
+                    Row {
+                        MonospaceText(
+                            text = "ID:",
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        SelectionContainer {
+                            MonospaceText(
+                                text = incomingDispatch?.dispatchId ?: ""
+                            )
+                        }
+                    }
+                    Row {
+                        MonospaceText(
+                            text = "Store:",
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        SelectionContainer {
+                            MonospaceText(
+                                text = incomingDispatch?.storeName ?: ""
+                            )
+                        }
+                    }
+
+                    Column(
+                        Modifier.fillMaxWidth(0.33f)
+                    ) {
+                        MonospaceText(
+                            text = "CurrentState:",
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        SelectionContainer {
+                            FormattedCodeBox(
+                                text = Json.encodeToString(incomingDispatch?.currentState)
+                            )
+                        }
+                    }
+                }
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                ) {
+                    Box(Modifier.padding(horizontal = 8.dp)) {
+                        EditableCodeBox(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight(),
+                            """
+                        fjdkslaf;jdkslafjdklsa
+                        fdjksalfjdjkafdafdsafdsafdsafdsafdsafdsafjkdl;ajfkdlsa;jflkds;afjdklsa
+                        fjdklas;fkda
+                        fjdksla;fjdkslafdsafdsafjkld;safjkld;ajfkdl;ajfkdl;ajfdkla;jfi9pqwnfjker;ahjgfioerwq;jafkoahgi9ropnagiroapnbgirangioa[ngir9peahgiroangioreuaphgioreqp
+                        fjkdsla;fdklsa;
+                        
+                        df
+                        dsafdsafdsa
+                        fdsa
+                        fdsafdsafdsa
+                        f
+                        dsafdsafd
+                        saf
+                        dsa
+                        fdsafdsafdsfjdkslaf;jdkslafjdklsa
+fdjksalfjdjkafdafdsafdsafdsafdsafdsafdsafjkdl;ajfkdlsa;jflkds;afjdklsa
+fjdklas;fkda
+fjdksla;fjdkslafdsafdsafjkld;safjkld;ajfkdl;ajfkdl;ajfdkla;jfi9pqwnfjker;ahjgfioerwq;jafkoahgi9ropnagiroapnbgirangioa[ngir9peahgiroangioreuaphgioreqp
+fjkdsla;fdklsa;
+
+df
+dsafdsafdsa
+fdsa
+fdsafdsafdsa
+f
+dsafdsafd
+saf
+dsa
+fdsafdsafds
+af
+d
+af
+dsa
+fds
+
+fdsa
+fdsa
+d
+as
+fdsafd
+sa
+                        af
+                        d
+                        af
+                        dsa
+                        fds
+                        
+                        fdsa
+                        fdsa
+                        d
+                        as
+                        fdsafd
+                        sa
+                    """.trimIndent()
+                        ) {
+
+                        }
+                    }
+                }
+            }
+            Spacer(
+                modifier = Modifier.fillMaxWidth().height(16.dp)
+            )
+        }
     }
+
+
 
 }
 
@@ -140,7 +299,7 @@ fun DispatchLogList(dispatchLog: List<DispatchLog>) {
     // Store the expanded states of the items in a mutable state map
     val expandedStates = remember { mutableStateMapOf<String, Boolean>() }
 
-    SectionTitle("Dispatch History")
+    SectionTitle(title = "Dispatch History")
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
@@ -247,6 +406,55 @@ fun DispatchLogRow(log: DispatchLog, expandedState: MutableMap<String, Boolean>)
 }
 
 @Composable
+fun EditableCodeBox(
+    modifier: Modifier = Modifier,
+    text: String,
+    fontSize: TextUnit = 12.sp,
+    onTextChange: (String) -> Unit // To handle text updates
+) {
+    val clipboardManager = LocalClipboardManager.current
+    var editableText by remember { mutableStateOf(text) }
+
+    val verticalScrollState = rememberScrollState()
+    val horizontalScrollState = rememberScrollState()
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .background(Colors.DarkGray)
+            .verticalScroll(verticalScrollState)  // Add vertical scroll
+            .horizontalScroll(horizontalScrollState)  // Add horizontal scroll
+            .then(modifier)
+    ) {
+        BasicTextField(
+            value = editableText,
+            onValueChange = {
+                editableText = it
+                onTextChange(it)  // Notify about text changes
+            },
+            textStyle = TextStyle(
+                fontFamily = FontFamily.Monospace,  // Retain monospace font
+                fontSize = fontSize,
+                color = Color.LightGray
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)  // Adjust padding for better visuals
+        )
+
+        CopyIcon(
+            modifier = Modifier
+                .size(20.dp)
+                .padding(top = 3.dp)
+                .align(Alignment.TopEnd),
+        ) {
+            clipboardManager.setText(AnnotatedString(editableText))
+        }
+    }
+}
+
+@Composable
 fun MonospaceText(
     modifier: Modifier = Modifier,
     text: String,
@@ -301,12 +509,16 @@ fun FormattedCodeBox(
 }
 
 @Composable
-fun SectionTitle(title: String) {
+fun SectionTitle(
+    modifier: Modifier = Modifier,
+    title: String
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .then(modifier),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
