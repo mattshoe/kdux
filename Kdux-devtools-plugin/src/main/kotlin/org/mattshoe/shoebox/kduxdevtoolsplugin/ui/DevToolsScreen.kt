@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.Divider
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
@@ -31,10 +33,15 @@ fun DevToolsScreen(
     viewModel: DevToolsViewModel
 ) {
     val state by viewModel.state.collectAsState()
-    when (state) {
-        is State.Stopped -> StoreNameInput(viewModel)
-        is State.Debugging -> DebugWindow((state as State.Debugging).storeName, viewModel)
+    val dispatchLog: List<DispatchLog> by viewModel.dispatchStream.collectAsState(emptyList())
+    Column {
+        when (state) {
+            is State.Stopped -> StoreNameInput(viewModel)
+            is State.Debugging -> DebugWindow((state as State.Debugging).storeName, viewModel)
+        }
+        DispatchLogList(dispatchLog)
     }
+
 }
 
 @Composable
@@ -80,7 +87,6 @@ fun DebugWindow(
     storeName: String,
     viewModel: DevToolsViewModel
 ) {
-    val dispatchLog: List<DispatchLog> by viewModel.dispatchStream.collectAsState(emptyList())
     val isPaused by derivedStateOf {
         val currentState = viewModel.state.value
         currentState is State.Debugging && currentState.paused
@@ -120,11 +126,10 @@ fun DebugWindow(
                 }
             }
             CloseIcon {
-                viewModel.handleIntent(UserIntent.StopDebugging)
+                viewModel.handleIntent(UserIntent.StopDebugging(storeName))
             }
         }
 
-        DispatchLogList(dispatchLog)
     }
 
 }
@@ -134,6 +139,8 @@ fun DebugWindow(
 fun DispatchLogList(dispatchLog: List<DispatchLog>) {
     // Store the expanded states of the items in a mutable state map
     val expandedStates = remember { mutableStateMapOf<String, Boolean>() }
+
+    SectionTitle("Dispatch History")
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
@@ -182,7 +189,7 @@ fun DispatchLogRow(log: DispatchLog, expandedState: MutableMap<String, Boolean>)
 
         // Expanded section with Request and Result JSONs
         if (isExpanded) {
-            Column(modifier = Modifier.padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)) {
+            Column(modifier = Modifier.padding(start = 24.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)) {
                 Row {
                     MonospaceText(
                         text = "Dispatch ID:",
@@ -290,5 +297,33 @@ fun FormattedCodeBox(
         ) {
             clipboardManager.setText(AnnotatedString(text))
         }
+    }
+}
+
+@Composable
+fun SectionTitle(title: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
+    ) {
+        Text(
+            text = title,
+            color = Color.LightGray,
+            modifier = Modifier.padding(horizontal = 8.dp),
+            style = MaterialTheme.typography.subtitle1,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.width(4.dp))  // Space after text
+        Divider(
+            modifier = Modifier
+                .weight(1f)
+                .height(1.dp)
+                .padding(end = 4.dp),
+            color = Color.Gray
+        )
     }
 }

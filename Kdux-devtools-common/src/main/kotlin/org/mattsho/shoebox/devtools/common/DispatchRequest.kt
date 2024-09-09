@@ -1,4 +1,4 @@
-package org.mattshoe.shoebox.kduxdevtoolsplugin.server
+package org.mattsho.shoebox.devtools.common
 
 import kotlinx.serialization.Serializable
 
@@ -26,6 +26,7 @@ data class DispatchRequest(
 @Serializable
 data class DispatchResult(
     val dispatchId: String,
+    val request: DispatchRequest,
     val storeName: String,
     val action: Action,
     val previousState: State,
@@ -37,3 +38,16 @@ data class DispatchResult(
 data class DispatchOverride(
     val action: Action
 )
+
+@Serializable
+data class DebugRequest(
+    val type: Type,
+    val data: String
+) {
+    @Serializable
+    enum class Type {
+        REGISTRATION,
+        DISPATCH_RESULT,
+        DISPATCH_REQUEST
+    }
+}

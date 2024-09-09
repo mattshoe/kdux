@@ -6,7 +6,11 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.mattsho.shoebox.devtools.common.DispatchRequest
+import org.mattsho.shoebox.devtools.common.DispatchResult
 import org.mattshoe.shoebox.kduxdevtoolsplugin.server.*
+import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Command
+import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Registration
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -30,7 +34,7 @@ sealed interface State {
 }
 
 sealed interface UserIntent {
-    data object StopDebugging: UserIntent
+    data class StopDebugging(val storeName: String): UserIntent
     data class StartDebugging(val storeName: String): UserIntent
     data class PauseDebugging(val storeName: String): UserIntent
     data class NextDispatch(val storeName: String): UserIntent
@@ -47,13 +51,17 @@ class DevToolsViewModel(
     private val _dispatchStream = MutableStateFlow<List<DispatchLog>>(emptyList())
     private val dispatchLog = mutableListOf<DispatchLog>()
     private val dispatchLogMutex = Mutex()
+    private val _registeredStores = mutableListOf<Registration>()
+    private val _registrationStream = MutableStateFlow(emptyList<Registration>())
+    private val registrationMutex = Mutex()
 
 
     override val state = _state.asStateFlow()
     val dispatchStream: Flow<List<DispatchLog>> = _dispatchStream.asSharedFlow()
+    val registrationStream: Flow<List<Registration>> = _registrationStream.asStateFlow()
 
     init {
-        server.data
+        server.dispatchRequestStream
             .onEach {
                 dispatchLogMutex.withLock {
                     dispatchLog.add(
@@ -65,6 +73,16 @@ class DevToolsViewModel(
                     }
                 }
             }.launchIn(coroutineScope)
+
+        server.registrationStream
+            .onEach { store ->
+                registrationMutex.withLock {
+                    _registeredStores.add(store)
+                    _registrationStream.update {
+                        _registeredStores.toList()
+                    }
+                }
+            }
     }
 
     override fun handleIntent(intent: UserIntent) {
@@ -79,11 +97,13 @@ class DevToolsViewModel(
                 }
             }
             is UserIntent.StopDebugging -> {
-                server.stop()
+                server.send(
+                    Command.Continue(intent.storeName)
+                )
                 _state.update { State.Stopped }
             }
             is UserIntent.PauseDebugging -> {
-                server.send(Command.Pause)
+                server.send(Command.Pause(intent.storeName))
                 _state.update {
                     State.Debugging(
                         intent.storeName,
@@ -92,13 +112,13 @@ class DevToolsViewModel(
                 }
             }
             is UserIntent.NextDispatch -> {
-                server.send(Command.NextDispatch)
+                server.send(Command.NextDispatch(intent.storeName))
             }
             is UserIntent.PreviousDispatch -> {
-                server.send(Command.PreviousDispatch)
+                server.send(Command.PreviousDispatch(intent.storeName))
             }
             is UserIntent.ReplayDispatch -> {
-                server.send(Command.ReplayDispatch(intent.dispatchId))
+                server.send(Command.ReplayDispatch(intent.storeName, intent.dispatchId))
             }
         }
     }
