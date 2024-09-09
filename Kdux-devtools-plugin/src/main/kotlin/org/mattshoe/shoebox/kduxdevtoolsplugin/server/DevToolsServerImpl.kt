@@ -37,8 +37,9 @@ class DevToolsServerImpl : DevToolsServer {
 
     init {
         coroutineScope.launch {
-            repeat(100) {
+            repeat(30) {
                 delay(500)
+
                 _dataStream.emit(
                     DispatchRequest(
                         UUID.randomUUID().toString(),

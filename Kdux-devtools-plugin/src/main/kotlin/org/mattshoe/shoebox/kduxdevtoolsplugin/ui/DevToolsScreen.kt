@@ -1,43 +1,39 @@
 package org.mattshoe.shoebox.kduxdevtoolsplugin.ui
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.material.MaterialTheme
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.intellij.util.Function.Mono
-import kotlinx.html.Entities
 import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.DevToolsViewModel
 import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.DispatchLog
 import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.State
 import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.UserIntent
 
 @Composable
-@Preview
 fun DevToolsScreen(
     viewModel: DevToolsViewModel
 ) {
     val state by viewModel.state.collectAsState()
     when (state) {
         is State.Stopped -> StoreNameInput(viewModel)
-        is State.Debugging -> DebugWindow(viewModel)
+        is State.Debugging -> DebugWindow((state as State.Debugging).storeName, viewModel)
     }
 }
 
@@ -81,9 +77,14 @@ fun StoreNameInput(
 
 @Composable
 fun DebugWindow(
+    storeName: String,
     viewModel: DevToolsViewModel
 ) {
     val dispatchLog: List<DispatchLog> by viewModel.dispatchStream.collectAsState(emptyList())
+    val isPaused by derivedStateOf {
+        val currentState = viewModel.state.value
+        currentState is State.Debugging && currentState.paused
+    }
 
     Column {
         Row(
@@ -94,21 +95,37 @@ fun DebugWindow(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.Bottom,
         ) {
-            Spacer(Modifier.width(8.dp))
-            PreviousIcon { }
-            Spacer(Modifier.width(8.dp))
-            StopIcon {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.Bottom,
+                modifier = Modifier.weight(1f)
+            ) {
+                Spacer(Modifier.width(8.dp))
+                PreviousIcon {
+                    viewModel.handleIntent(UserIntent.PreviousDispatch(storeName))
+                }
+                Spacer(Modifier.width(8.dp))
+                if (isPaused) {
+                    PlayIcon {
+                        viewModel.handleIntent(UserIntent.StartDebugging(storeName))
+                    }
+                } else {
+                    PauseIcon {
+                        viewModel.handleIntent(UserIntent.PauseDebugging(storeName))
+                    }
+                }
+                Spacer(Modifier.width(8.dp))
+                NextIcon {
+                    viewModel.handleIntent(UserIntent.NextDispatch(storeName))
+                }
+            }
+            CloseIcon {
                 viewModel.handleIntent(UserIntent.StopDebugging)
             }
-            Spacer(Modifier.width(8.dp))
-            PlayIcon { }
-            Spacer(Modifier.width(8.dp))
-            NextIcon { }
         }
 
         DispatchLogList(dispatchLog)
     }
-
 
 }
 
@@ -158,7 +175,7 @@ fun DispatchLogRow(log: DispatchLog, expandedState: MutableMap<String, Boolean>)
                 Spacer(Modifier.width(16.dp))
                 MonospaceText(text = log.request.storeName)
                 Spacer(Modifier.width(16.dp))
-                MonospaceText(text = log.request.action.json)
+                MonospaceText(text = log.request.action.name)
             }
             MonospaceText(text = if (isExpanded) "▲" else "▼")
         }
@@ -173,7 +190,9 @@ fun DispatchLogRow(log: DispatchLog, expandedState: MutableMap<String, Boolean>)
                         horizontalPadding = 0.dp
                     )
                     Spacer(Modifier.width(8.dp))
-                    MonospaceText(text = log.request.dispatchId)
+                    SelectionContainer {
+                        MonospaceText(text = log.request.dispatchId)
+                    }
                 }
 
                 Row {
@@ -183,7 +202,9 @@ fun DispatchLogRow(log: DispatchLog, expandedState: MutableMap<String, Boolean>)
                         horizontalPadding = 0.dp
                     )
                     Spacer(Modifier.width(8.dp))
-                    MonospaceText(text = log.request.action.name)
+                    SelectionContainer {
+                        MonospaceText(text = log.request.action.name)
+                    }
                 }
 
                 MonospaceText(
@@ -191,7 +212,9 @@ fun DispatchLogRow(log: DispatchLog, expandedState: MutableMap<String, Boolean>)
                     fontWeight = FontWeight.Bold,
                     horizontalPadding = 0.dp
                 )
-                FormattedCodeBox(text = log.request.currentState.json)
+                SelectionContainer {
+                    FormattedCodeBox(text = log.request.currentState.json)
+                }
                 Spacer(Modifier.height(8.dp))
 
                 MonospaceText(
@@ -199,14 +222,18 @@ fun DispatchLogRow(log: DispatchLog, expandedState: MutableMap<String, Boolean>)
                     fontWeight = FontWeight.Bold,
                     horizontalPadding = 0.dp
                 )
-                FormattedCodeBox(text = log.request.action.json)
+                SelectionContainer {
+                    FormattedCodeBox(text = log.request.action.json)
+                }
                 Spacer(Modifier.height(8.dp))
                 MonospaceText(
                     text = "Result",
                     fontWeight = FontWeight.Bold,
                     horizontalPadding = 0.dp
                 )
-                FormattedCodeBox(text = log.result?.action?.json ?: "UNKNOWN")
+                SelectionContainer {
+                    FormattedCodeBox(text = log.result?.action?.json ?: "UNKNOWN")
+                }
             }
         }
     }
@@ -241,6 +268,7 @@ fun FormattedCodeBox(
     text: String,
     fontSize: TextUnit = 12.sp
 ) {
+    val clipboardManager = LocalClipboardManager.current
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -248,9 +276,19 @@ fun FormattedCodeBox(
             .background(Colors.DarkGray)
             .then(modifier)
     ) {
+
         MonospaceText(
             text = text,
             fontSize = fontSize
         )
+
+        CopyIcon(
+            modifier = Modifier
+                .size(20.dp)
+                .padding(top = 3.dp)
+                .align(Alignment.TopEnd),
+        ) {
+            clipboardManager.setText(AnnotatedString(text))
+        }
     }
 }

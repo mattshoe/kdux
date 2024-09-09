@@ -3,7 +3,6 @@ package org.mattshoe.shoebox.kduxdevtoolsplugin.ui
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.onClick
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -99,6 +98,66 @@ fun DebugIcon(
         modifier,
         resource = "/debug_icon.svg",
         description = "Start Debugging",
+        tint = tint,
+        onClick = onClick
+    )
+}
+
+@Composable
+fun SendIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = Colors.LightGray,
+    onClick: () -> Unit = { }
+) {
+    Icon(
+        modifier,
+        resource = "/send_icon.svg",
+        description = "Replay Dispatch.",
+        tint = tint,
+        onClick = onClick
+    )
+}
+
+@Composable
+fun CopyIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = Colors.LightGray,
+    onClick: () -> Unit = { }
+) {
+    Icon(
+        modifier,
+        resource = "/copy_icon.svg",
+        description = "Copy Text",
+        tint = tint,
+        onClick = onClick
+    )
+}
+
+@Composable
+fun PauseIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = Colors.LightGray,
+    onClick: () -> Unit = { }
+) {
+    Icon(
+        modifier,
+        resource = "/pause_icon.svg",
+        description = "Pause Dispatching.",
+        tint = tint,
+        onClick = onClick
+    )
+}
+
+@Composable
+fun CloseIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = Colors.LightGray,
+    onClick: () -> Unit = { }
+) {
+    Icon(
+        modifier,
+        resource = "/close_icon.svg",
+        description = "Close Debugging Window.",
         tint = tint,
         onClick = onClick
     )

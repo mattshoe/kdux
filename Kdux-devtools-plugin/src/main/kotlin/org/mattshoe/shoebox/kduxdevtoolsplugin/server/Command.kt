@@ -5,19 +5,22 @@ import kotlinx.serialization.Serializable
 sealed interface Command {
     val payload: CommandPayload
 
-    data object Next: Command {
+    data object Pause: Command {
+        override val payload = CommandPayload("pause")
+    }
+    data object NextDispatch: Command {
         override val payload = CommandPayload("next")
     }
-    data object Previous: Command {
+    data object PreviousDispatch: Command {
         override val payload = CommandPayload("previous")
     }
-    data class Replay(private val action: Action): Command {
-        override val payload = CommandPayload("replay", action)
+    data class ReplayDispatch(private val dispatchId: String): Command {
+        override val payload = CommandPayload("replay", dispatchId)
     }
 }
 
 @Serializable
 data class CommandPayload(
     val command: String,
-    val action: Action? = null
+    val data: String? = null
 )
