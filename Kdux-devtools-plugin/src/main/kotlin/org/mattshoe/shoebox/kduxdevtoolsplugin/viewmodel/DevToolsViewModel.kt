@@ -84,7 +84,7 @@ class DevToolsViewModel(
                         _registeredStores.toList()
                     }
                 }
-            }
+            }.launchIn()
     }
 
     override fun handleIntent(intent: UserIntent) {
