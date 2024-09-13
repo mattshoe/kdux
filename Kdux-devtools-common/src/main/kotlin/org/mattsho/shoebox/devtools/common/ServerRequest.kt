@@ -3,14 +3,15 @@ package org.mattsho.shoebox.devtools.common
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class DebugRequest(
+data class ServerRequest(
+    val id: String? = null,
     val type: Type,
     val data: String
 ) {
     @Serializable
     enum class Type {
         REGISTRATION,
-        DISPATCH_RESULT,
-        DISPATCH_REQUEST
+        DISPATCH_REQUEST,
+        DISPATCH_RESULT
     }
 }

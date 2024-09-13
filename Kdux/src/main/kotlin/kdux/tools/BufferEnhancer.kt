@@ -33,6 +33,9 @@ open class BufferEnhancer<State: Any, Action: Any>(
         return object : Store<State, Action> {
             private val bufferMutex = Mutex()
             private val buffer = mutableListOf<Action>()
+
+            override val name: String
+                get() = store.name
             override val state: Flow<State>
                 get() = store.state
             override val currentState: State

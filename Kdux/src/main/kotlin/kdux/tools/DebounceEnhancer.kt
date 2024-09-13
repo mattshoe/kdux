@@ -46,6 +46,8 @@ open class DebounceEnhancer<State: Any, Action: Any>(
             private val elapsedTimeSinceLastDispatch: Duration get() = now.minus(debounceStart)
             private val debounceMutex = Mutex()
 
+            override val name: String
+                get() = store.name
             override val state: Flow<State>
                 get() = store.state
             override val currentState: State

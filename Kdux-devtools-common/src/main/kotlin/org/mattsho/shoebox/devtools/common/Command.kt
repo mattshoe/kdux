@@ -42,7 +42,7 @@ sealed interface Command {
         override val storeName: String,
         val action: Action
     ): Command {
-        override val payload = CommandPayload("dispatch", Json.encodeToString(action))
+        override val payload = CommandPayload("override", Json.encodeToString(action))
     }
 }
 

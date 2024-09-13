@@ -18,7 +18,6 @@ repositories {
 dependencies {
   implementation(project(":Kdux-devtools-common"))
   implementation(compose.desktop.currentOs)
-
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2")
   implementation("io.ktor:ktor-server-core:2.3.12")
   implementation("io.ktor:ktor-server-netty:2.3.12")

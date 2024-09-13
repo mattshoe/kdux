@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.intellij.testFramework.requireIs
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -100,6 +101,7 @@ fun DebugWindow(
         viewModel.state.value is State.Paused
     }
     val incomingDispatch by viewModel.debugStream.collectAsState(null)
+    println("Incoming dispatch composed with --> $incomingDispatch")
     val isDisabled by derivedStateOf { incomingDispatch == null }
 
     Column {
@@ -197,7 +199,7 @@ fun DebugWindow(
                     }
 
                     Column(
-                        Modifier.fillMaxWidth(0.33f)
+                        Modifier.fillMaxWidth()
                     ) {
                         MonospaceText(
                             text = "CurrentState:",
@@ -206,80 +208,22 @@ fun DebugWindow(
                         Spacer(Modifier.width(4.dp))
                         SelectionContainer {
                             FormattedCodeBox(
-                                text = Json.encodeToString(incomingDispatch?.currentState)
+                                text = incomingDispatch?.currentState?.json ?: "UNKNOWN"
                             )
                         }
                     }
-                }
+                    Spacer(Modifier.width(4.dp))
+                    MonospaceText(
+                        text = "Action:",
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    EditableCodeBox(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        text = incomingDispatch?.action?.json ?: "UNKNOWN"
+                    ) {
 
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                ) {
-                    Box(Modifier.padding(horizontal = 8.dp)) {
-                        EditableCodeBox(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .fillMaxHeight(),
-                            """
-                        fjdkslaf;jdkslafjdklsa
-                        fdjksalfjdjkafdafdsafdsafdsafdsafdsafdsafjkdl;ajfkdlsa;jflkds;afjdklsa
-                        fjdklas;fkda
-                        fjdksla;fjdkslafdsafdsafjkld;safjkld;ajfkdl;ajfkdl;ajfdkla;jfi9pqwnfjker;ahjgfioerwq;jafkoahgi9ropnagiroapnbgirangioa[ngir9peahgiroangioreuaphgioreqp
-                        fjkdsla;fdklsa;
-                        
-                        df
-                        dsafdsafdsa
-                        fdsa
-                        fdsafdsafdsa
-                        f
-                        dsafdsafd
-                        saf
-                        dsa
-                        fdsafdsafdsfjdkslaf;jdkslafjdklsa
-fdjksalfjdjkafdafdsafdsafdsafdsafdsafdsafjkdl;ajfkdlsa;jflkds;afjdklsa
-fjdklas;fkda
-fjdksla;fjdkslafdsafdsafjkld;safjkld;ajfkdl;ajfkdl;ajfdkla;jfi9pqwnfjker;ahjgfioerwq;jafkoahgi9ropnagiroapnbgirangioa[ngir9peahgiroangioreuaphgioreqp
-fjkdsla;fdklsa;
-
-df
-dsafdsafdsa
-fdsa
-fdsafdsafdsa
-f
-dsafdsafd
-saf
-dsa
-fdsafdsafds
-af
-d
-af
-dsa
-fds
-
-fdsa
-fdsa
-d
-as
-fdsafd
-sa
-                        af
-                        d
-                        af
-                        dsa
-                        fds
-                        
-                        fdsa
-                        fdsa
-                        d
-                        as
-                        fdsafd
-                        sa
-                    """.trimIndent()
-                        ) {
-
-                        }
                     }
                 }
             }
@@ -306,14 +250,6 @@ fun DispatchLogList(dispatchLog: List<DispatchLog>) {
             .fillMaxHeight()
     ) {
         items(dispatchLog) { log ->
-            val isExpanded by remember {
-                derivedStateOf {
-                    expandedStates[log.request.timestamp] ?: false
-                }
-            }
-
-            println("${log.request.dispatchId}::recomposed --> $isExpanded")
-
             DispatchLogRow(log, expandedStates)
         }
     }
@@ -322,8 +258,7 @@ fun DispatchLogList(dispatchLog: List<DispatchLog>) {
 
 @Composable
 fun DispatchLogRow(log: DispatchLog, expandedState: MutableMap<String, Boolean>) {
-    val isExpanded = expandedState[log.request.dispatchId] ?: false
-    println("${log.request.dispatchId}::isExpanded --> $isExpanded")
+    val isExpanded = expandedState[log.result.dispatchId] ?: false
     Column(modifier = Modifier.fillMaxWidth()) {
         // Header Row with caret
         Row(
@@ -331,17 +266,16 @@ fun DispatchLogRow(log: DispatchLog, expandedState: MutableMap<String, Boolean>)
                 .fillMaxWidth()
                 .clickable {
                     // Toggle the expansion state for the specific log item
-                    println("${log.request.dispatchId}::setIsExpanded --> ${isExpanded.not()}")
-                    expandedState[log.request.dispatchId] = !isExpanded
+                    expandedState[log.result.dispatchId] = !isExpanded
                 },
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row {
-                MonospaceText(text = log.request.timestamp)
+                MonospaceText(text = log.result.timestamp)
                 Spacer(Modifier.width(16.dp))
-                MonospaceText(text = log.request.storeName)
+                MonospaceText(text = log.result.storeName)
                 Spacer(Modifier.width(16.dp))
-                MonospaceText(text = log.request.action.name)
+                MonospaceText(text = log.result.action.name)
             }
             MonospaceText(text = if (isExpanded) "▲" else "▼")
         }
@@ -352,53 +286,74 @@ fun DispatchLogRow(log: DispatchLog, expandedState: MutableMap<String, Boolean>)
                 Row {
                     MonospaceText(
                         text = "Dispatch ID:",
-                        fontWeight = FontWeight.Bold,
                         horizontalPadding = 0.dp
                     )
                     Spacer(Modifier.width(8.dp))
                     SelectionContainer {
-                        MonospaceText(text = log.request.dispatchId)
+                        MonospaceText(
+                            text = log.result.dispatchId,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
 
                 Row {
                     MonospaceText(
-                        text = "Action:",
-                        fontWeight = FontWeight.Bold,
+                        text = "Original State:",
                         horizontalPadding = 0.dp
                     )
-                    Spacer(Modifier.width(8.dp))
+                    Spacer(Modifier.width(16.dp))
                     SelectionContainer {
-                        MonospaceText(text = log.request.action.name)
+                        MonospaceText(
+                            text = log.result.request.currentState.name,
+                            fontWeight = FontWeight.Bold,
+                            horizontalPadding = 0.dp
+                        )
                     }
                 }
-
-                MonospaceText(
-                    text = "Current State",
-                    fontWeight = FontWeight.Bold,
-                    horizontalPadding = 0.dp
-                )
                 SelectionContainer {
-                    FormattedCodeBox(text = log.request.currentState.json)
+                    FormattedCodeBox(text = log.result.request.currentState.json)
                 }
                 Spacer(Modifier.height(8.dp))
 
-                MonospaceText(
-                    text = "Request",
-                    fontWeight = FontWeight.Bold,
-                    horizontalPadding = 0.dp
-                )
+
+                Row {
+                    MonospaceText(
+                        text = "Action:",
+                        horizontalPadding = 0.dp
+                    )
+                    Spacer(Modifier.width(16.dp))
+                    SelectionContainer {
+                        MonospaceText(
+                            text = log.result.action.name,
+                            fontWeight = FontWeight.Bold,
+                            horizontalPadding = 0.dp
+                        )
+                    }
+                }
                 SelectionContainer {
-                    FormattedCodeBox(text = log.request.action.json)
+                    FormattedCodeBox(text = log.result.action.json)
                 }
                 Spacer(Modifier.height(8.dp))
-                MonospaceText(
-                    text = "Result",
-                    fontWeight = FontWeight.Bold,
-                    horizontalPadding = 0.dp
-                )
+
+
+
+                Row {
+                    MonospaceText(
+                        text = "Updated State:",
+                        horizontalPadding = 0.dp
+                    )
+                    Spacer(Modifier.width(16.dp))
+                    SelectionContainer {
+                        MonospaceText(
+                            text = log.result.newState.name,
+                            fontWeight = FontWeight.Bold,
+                            horizontalPadding = 0.dp
+                        )
+                    }
+                }
                 SelectionContainer {
-                    FormattedCodeBox(text = log.result?.action?.json ?: "UNKNOWN")
+                    FormattedCodeBox(text = log.result.newState.json)
                 }
             }
         }
@@ -413,10 +368,16 @@ fun EditableCodeBox(
     onTextChange: (String) -> Unit // To handle text updates
 ) {
     val clipboardManager = LocalClipboardManager.current
-    var editableText by remember { mutableStateOf(text) }
+    var editableText by remember {
+        mutableStateOf(text)
+    }
 
     val verticalScrollState = rememberScrollState()
     val horizontalScrollState = rememberScrollState()
+
+    LaunchedEffect(text) {
+        editableText = text
+    }
 
     Box(
         modifier = Modifier

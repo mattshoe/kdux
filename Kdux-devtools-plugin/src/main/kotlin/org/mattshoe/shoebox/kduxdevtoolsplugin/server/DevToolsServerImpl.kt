@@ -1,29 +1,35 @@
 package org.mattshoe.shoebox.kduxdevtoolsplugin.server
 
-import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.mattsho.shoebox.devtools.common.*
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Command
+import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.CommandPayload
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Registration
-import java.time.Duration
-import java.time.Instant
-import java.time.format.DateTimeFormatter
+import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.ServerMessage
+import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Synchronized
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
+
+private data class Session(
+    val id: UUID,
+    val storeName: String,
+    val socket: WebSocketSession
+)
+
+typealias RequestId = String
+typealias SessionId = String
+typealias StoreName = String
+
 
 class DevToolsServerImpl : DevToolsServer {
     private var coroutineScope = buildCoroutineScope()
@@ -40,56 +46,63 @@ class DevToolsServerImpl : DevToolsServer {
     )
     private val _dispatchResultStream = MutableSharedFlow<DispatchResult>(
         replay = 0,
-        extraBufferCapacity = 10000,
+        extraBufferCapacity = 1000,
         onBufferOverflow = BufferOverflow.SUSPEND
     )
     private val isStarted = AtomicBoolean(false)
     private val server: ApplicationEngine = buildServer()
-    private val sessionMap = mutableMapOf<String, WebSocketSession>()
-    private val sessionMutex = Mutex()
+    private val storeMap = Synchronized(mutableMapOf<StoreName, WebSocketSession>())
+    private val sessionMap = Synchronized(mutableMapOf<SessionId, Registration>())
+    private val requestMap = Synchronized(mutableMapOf<StoreName, RequestId>())
+    private var storeUnderDebug: String? = null
 
     override val dispatchRequestStream = _dispatchRequestStream.asSharedFlow()
     override val dispatchResultStream = _dispatchResultStream.asSharedFlow()
     override val registrationStream = _registrationStream.asSharedFlow()
 
     init {
-        coroutineScope.launch {
-            repeat(30) {
-                delay(500)
-
-                _dispatchRequestStream.emit(
-                    DispatchRequest(
-                        UUID.randomUUID().toString(),
-                        "testStore",
-                        State("derp", "$it"),
-                        Action("foo", "$it"),
-                        DateTimeFormatter.ISO_INSTANT.format(Instant.now())
-                    )
-                )
-
-                _registrationStream.emit(
-                    Registration(
-                        "Store #${it}"
-                    )
-                )
-            }
-        }
         start()
-
         commandStream
             .onEach { command ->
-                sessionMutex.withLock {
-                    sessionMap[command.storeName]?.send(
+                println("Command Issued --> $command")
+                println("Requests --> \n\t${requestMap.access { map -> map.keys.joinToString("\n\t") { "$it: ${map[it]}" } }}")
+                val requestId = requestMap.access {
+                    it.remove(command.storeName)
+                }
+                if (requestId != null) {
+                    println("Request ID --> $requestId")
+                    val session = storeMap.access {
+                        it[command.storeName]
+                    }
+                    println("Session --> $session")
+                    session?.sendMessage(
+                        requestId,
+                        Json.encodeToString(command.payload)
+                    )
+                } else {
+                    println("No Request id! Sending message")
+                    storeMap.access {
+                        it[command.storeName]
+                    }?.sendMessage(
+                        null,
                         Json.encodeToString(command.payload)
                     )
                 }
-            }.launchIn(coroutineScope)
+            }
+            .catch {
+                println(it)
+            }
+            .launchIn(coroutineScope)
     }
 
     override fun send(command: Command) {
         coroutineScope.launch {
             commandStream.emit(command)
         }
+    }
+
+    override fun debug(storeName: String?) {
+        storeUnderDebug = storeName
     }
 
     override fun start() {
@@ -111,58 +124,100 @@ class DevToolsServerImpl : DevToolsServer {
             host = "localhost",
             port = 9001
         ) {
-            install(WebSockets) {
-                pingPeriod = Duration.ofSeconds(15)
-                timeout = Duration.ofSeconds(15)
-            }
+            install(WebSockets)
 
             routing {
-
                 webSocket("/debug") {
-
-                    for (frame in incoming) {
-                        if (frame is Frame.Text) {
-                            val text = frame.readText()
-                            try {
-                                val debugRequest = Json.decodeFromString<DebugRequest>(text)
-                                when (debugRequest.type) {
-                                    DebugRequest.Type.REGISTRATION -> register(debugRequest.data)
-                                    DebugRequest.Type.DISPATCH_REQUEST -> dispatchRequest(debugRequest.data)
-                                    DebugRequest.Type.DISPATCH_RESULT -> dispatchResult(debugRequest.data)
-                                }
-                            } catch (e: Exception) {
-                                println("Error: ${e.message}")
+                    val sessionId = UUID.randomUUID()
+                    try {
+                        for (frame in incoming) {
+                            when (frame) {
+                                is Frame.Text -> handleTextFrame(frame, sessionId)
+                                is Frame.Close -> handleFrameClose(frame, sessionId)
+                                else -> Unit
                             }
                         }
+                    } catch (ex: Throwable) {
+                        this.send(Frame.Close(CloseReason(CloseReason.Codes.INTERNAL_ERROR, ex.message ?: "UNKNOWN")))
                     }
                 }
             }
         }
     }
 
-    private suspend fun WebSocketSession.register(data: String) {
-        val request = Json.decodeFromString<Registration>(data) // Receive the incoming request as a Kotlin data class
-        sessionMutex.withLock {
-            sessionMap[request.storeName] = this
+    private suspend fun WebSocketSession.handleTextFrame(frame: Frame.Text, sessionId: UUID) {
+        try {
+            val text = frame.readText()
+            val serverRequest = Json.decodeFromString<ServerRequest>(text)
+
+            when (serverRequest.type) {
+                ServerRequest.Type.REGISTRATION -> register(serverRequest, sessionId)
+                ServerRequest.Type.DISPATCH_REQUEST -> dispatchRequest(serverRequest, sessionId)
+                ServerRequest.Type.DISPATCH_RESULT -> dispatchResult(serverRequest, sessionId)
+            }
+        } catch (e: Exception) {
+            println(e)
         }
-        _registrationStream.emit(request)
     }
 
-    private suspend fun  WebSocketSession.dispatchRequest(data: String) {
-        // Deserialize the message
-        val kduxDispatchRequest = Json.decodeFromString<DispatchRequest>(data)
-        println("Received Store Data: ${kduxDispatchRequest.storeName}")
+    private suspend fun WebSocketSession.register(request: ServerRequest, sessionId: UUID) {
+        val registration = Json.decodeFromString<Registration>(request.data) // Receive the incoming request as a Kotlin data class
 
-        _dispatchRequestStream.emit(kduxDispatchRequest)
+        storeMap.update {
+            it[registration.storeName] = this
+        }
+        sessionMap.update {
+            it[sessionId.toString()] = registration
+        }
+        _registrationStream.emit(registration)
     }
 
-    private suspend fun  WebSocketSession.dispatchResult(data: String) {
-        // Deserialize the message
-        val kduxDispatchResult = Json.decodeFromString<DispatchResult>(data)
-        println("Received Dispatch Result: ${kduxDispatchResult}")
+    private suspend fun WebSocketSession.dispatchRequest(serverRequest: ServerRequest, sessionId: UUID) {
+        val dispatchRequest = Json.decodeFromString<DispatchRequest>(serverRequest.data)
+        log("Dispatch Request -> $dispatchRequest")
+        if (storeUnderDebug != null && storeUnderDebug == dispatchRequest.storeName) {
+            requestMap.update {
+                it[dispatchRequest.storeName] = dispatchRequest.dispatchId
+            }
+            _dispatchRequestStream.emit(dispatchRequest)
+        } else {
+            sendMessage(
+                id = dispatchRequest.dispatchId,
+                text = Json.encodeToString(CommandPayload("continue"))
+            )
+        }
+    }
 
-        _dispatchResultStream.emit(kduxDispatchResult)
+    private suspend fun WebSocketSession.dispatchResult(serverRequest: ServerRequest, sessionId: UUID) {
+        val dispatchResult = Json.decodeFromString<DispatchResult>(serverRequest.data)
+        _dispatchResultStream.emit(dispatchResult)
+    }
+
+    private suspend fun handleFrameClose(frame: Frame.Close, sessionId: UUID) {
+        val registration = sessionMap.access {
+            it.remove(sessionId.toString())
+        }
+        storeMap.update {
+            it.remove(registration?.storeName)
+        }
+    }
+
+    private suspend fun WebSocketSession.sendMessage(id: String?, text: String) {
+        this.send(
+            Frame.Text(
+                Json.encodeToString(
+                    ServerMessage(
+                        id = id,
+                        data = text
+                    )
+                )
+            )
+        )
     }
 
     private fun buildCoroutineScope() = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+}
+
+fun log(msg: Any?) {
+//    println(msg.toString())
 }

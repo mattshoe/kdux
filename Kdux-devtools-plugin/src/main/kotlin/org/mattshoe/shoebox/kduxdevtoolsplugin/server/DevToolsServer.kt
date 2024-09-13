@@ -11,6 +11,7 @@ interface DevToolsServer {
     val dispatchResultStream: Flow<DispatchResult>
     val registrationStream: Flow<Registration>
     fun send(command: Command)
+    fun debug(storeName: String?)
     fun start()
     fun stop()
 }
