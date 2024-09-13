@@ -7,7 +7,6 @@ import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -24,24 +23,17 @@ typealias RequestId = String
 typealias SessionId = String
 typealias StoreName = String
 
+data class RegistrationChange(
+    val value: Registration,
+    val removed: Boolean = false
+)
+
 class DevToolsServerImpl : DevToolsServer {
     private var coroutineScope = buildCoroutineScope()
     private val userCommandStream = MutableSharedFlow<UserCommand>()
-    private val _registrationStream = MutableSharedFlow<Registration>(
-        replay = 0,
-        extraBufferCapacity = 10000,
-        onBufferOverflow = BufferOverflow.SUSPEND
-    )
-    private val _dispatchRequestStream = MutableSharedFlow<DispatchRequest>(
-        replay = 0,
-        extraBufferCapacity = 10000,
-        onBufferOverflow = BufferOverflow.SUSPEND
-    )
-    private val _dispatchResultStream = MutableSharedFlow<DispatchResult>(
-        replay = 0,
-        extraBufferCapacity = 1000,
-        onBufferOverflow = BufferOverflow.SUSPEND
-    )
+    private val _registrationStream = MutableSharedFlow<RegistrationChange>()
+    private val _dispatchRequestStream = MutableSharedFlow<DispatchRequest>()
+    private val _dispatchResultStream = MutableSharedFlow<DispatchResult>()
     private val isStarted = AtomicBoolean(false)
     private val server: ApplicationEngine = buildServer()
     private val storeMap = Synchronized(mutableMapOf<StoreName, WebSocketSession>())
@@ -127,6 +119,20 @@ class DevToolsServerImpl : DevToolsServer {
                         }
                     } catch (ex: Throwable) {
                         this.send(Frame.Close(CloseReason(CloseReason.Codes.INTERNAL_ERROR, ex.message ?: "UNKNOWN")))
+                    } finally {
+                        closeReason.await()
+                        val registration = sessionMap.access { map ->
+                            map.remove(sessionId.toString())
+                        }
+                        registration?.let { reg ->
+                            storeMap.access { it.remove(reg.storeName) }
+                            _registrationStream.emit(
+                                RegistrationChange(
+                                    value = registration,
+                                    removed = true
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -157,7 +163,9 @@ class DevToolsServerImpl : DevToolsServer {
         sessionMap.update {
             it[sessionId.toString()] = registration
         }
-        _registrationStream.emit(registration)
+        _registrationStream.emit(
+            RegistrationChange(registration, false)
+        )
     }
 
     private suspend fun WebSocketSession.dispatchRequest(serverRequest: ServerRequest, sessionId: UUID) {
@@ -194,7 +202,7 @@ class DevToolsServerImpl : DevToolsServer {
             Frame.Text(
                 Json.encodeToString(
                     ServerMessage(
-                        id = id,
+                        responseCorrelationId = id,
                         data = text
                     )
                 )

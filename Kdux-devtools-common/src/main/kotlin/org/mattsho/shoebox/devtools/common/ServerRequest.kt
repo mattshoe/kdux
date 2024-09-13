@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ServerRequest(
-    val id: String? = null,
+    val responseCorrelationId: String? = null,
     val type: Type,
     val data: String
 ) {

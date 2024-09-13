@@ -7,7 +7,6 @@ import io.ktor.http.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -26,11 +25,7 @@ internal class ClientDebugSessionImpl(
 ): ClientDebugSession {
     private lateinit var socket: WebSocketSession
     private val socketInitialized = CompletableDeferred<Boolean>()
-    private val _adHocCommands = MutableSharedFlow<Command>(
-        replay = 0,
-        extraBufferCapacity = 100,
-        onBufferOverflow = BufferOverflow.SUSPEND
-    )
+    private val _adHocCommands = MutableSharedFlow<Command>()
     private val responseMap = mutableMapOf<String, CompletableDeferred<Command>>()
     private val responseMutex = Mutex()
 
@@ -79,9 +74,9 @@ internal class ClientDebugSessionImpl(
                     try {
                         val serverMessage = Json.decodeFromString<ServerMessage>(it.readText())
                         val command = Json.decodeFromString<Command>(serverMessage.data)
-                        if (serverMessage.id != null) {
+                        if (serverMessage.responseCorrelationId != null) {
                             val completable = responseMutex.withLock {
-                                responseMap[serverMessage.id]
+                                responseMap[serverMessage.responseCorrelationId]
                             }
                             if (completable == null) {
                                 _adHocCommands.emit(command)
@@ -117,7 +112,7 @@ internal class ClientDebugSessionImpl(
     override suspend fun awaitResponse(serverRequest: ServerRequest): Command {
         val completableDeferred = CompletableDeferred<Command>()
 
-        serverRequest.id?.let {
+        serverRequest.responseCorrelationId?.let {
             responseMutex.withLock {
                 responseMap[it] = completableDeferred
             }

@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ServerMessage(
-    val id: String?,
+    val responseCorrelationId: String?,
     val data: String
 )

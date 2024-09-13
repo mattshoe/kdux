@@ -57,11 +57,11 @@ class DevToolsViewModel(
     private val dispatchLogMutex = Mutex()
     private val _registeredStores = mutableListOf<Registration>()
     private val _registrationStream = MutableStateFlow(emptyList<Registration>())
-    private val _debugStream = MutableSharedFlow<DispatchRequest?>(replay = 1)
+    private val _debugStream = MutableSharedFlow<DispatchRequest?>()
     private val registrationMutex = Mutex()
     private val prettyJson = Json {
         prettyPrint = true
-        prettyPrintIndent = "    "
+        prettyPrintIndent = "  "
     }
 
 
@@ -111,19 +111,33 @@ class DevToolsViewModel(
                         )
                     )
                     _dispatchStream.update {
-                        dispatchLog.toList().sortedBy {
-                            it.result.timestamp
-                        }.reversed()
+                        try {
+                            dispatchLog.toList().sortedBy {
+                                it.result.timestamp
+                            }.reversed().take(500)
+                        } catch (e: Throwable) {
+                            println(e)
+                            emptyList()
+                        }
                     }
                 }
             }.launchIn(coroutineScope)
 
         server.registrationStream
-            .onEach { store ->
+            .onEach { registrationChange ->
                 registrationMutex.withLock {
-                    _registeredStores.add(store)
+                    if (registrationChange.removed) {
+                        _registeredStores.remove(registrationChange.value)
+                    } else {
+                        _registeredStores.add(registrationChange.value)
+                    }
                     _registrationStream.update {
-                        _registeredStores.toList()
+                        try {
+                            _registeredStores.toList()
+                        } catch (e: Throwable) {
+                            println(e)
+                            emptyList()
+                        }
                     }
                 }
             }.launchIn(coroutineScope)

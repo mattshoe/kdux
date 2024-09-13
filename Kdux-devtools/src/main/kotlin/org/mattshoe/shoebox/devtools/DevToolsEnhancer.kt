@@ -4,14 +4,17 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.mattsho.shoebox.devtools.common.Action
 import org.mattsho.shoebox.devtools.common.ServerRequest
 import org.mattsho.shoebox.devtools.common.DispatchRequest
 import org.mattsho.shoebox.devtools.common.DispatchResult
 import org.mattshoe.shoebox.devtools.server.ServerClient
 import org.mattshoe.shoebox.kdux.Enhancer
 import org.mattshoe.shoebox.kdux.Store
+import org.mattshoe.shoebox.kdux.__internalstateOverride
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Command
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.TimeStamper
 import java.util.UUID
@@ -34,21 +37,26 @@ class DevToolsEnhancer<State: Any, Action: Any>(
         return object : Store<State, Action> {
 
             private val historyMutex = Mutex()
+            private val dispatchMutex = Mutex()
             private val history = mutableListOf<Snapshot<State, Action>>()
             private val dispatchMap = mutableMapOf<UUID, Snapshot<State, Action>>()
             private val socket = ServerClient.startSession(name)
-            private var _currentState: State = store.currentState
-            private val stateOverride = MutableSharedFlow<State>()
 
             init {
                 socket.adHocCommands
                     .onEach {
-                        // TODO
+                        try {
+                            val actionWrapper: org.mattsho.shoebox.devtools.common.Action = Json.decodeFromString(it.payload ?: "")
+                            val action = actionDeserializer(actionWrapper)
+                            handleServerCommand(action, it, UUID.randomUUID())
+                        } catch (e: Throwable) {
+                            println(e)
+                        }
                     }.launchIn(coroutineScope)
 
                 state
                     .onEach {
-                        _currentState = it
+                        println("New State --> $it")
                     }.launchIn(coroutineScope)
                 history.add(
                     Snapshot(null, currentState)
@@ -58,28 +66,27 @@ class DevToolsEnhancer<State: Any, Action: Any>(
             override val name: String
                 get() = store.name
             override val state: Flow<State>
-                get() = merge(
-                    store.state,
-                    stateOverride
-                )
+                get() = store.state
             override val currentState: State
                 get() = store.currentState
 
             override suspend fun dispatch(action: Action) = coroutineScope {
                 val dispatchId = UUID.randomUUID()
-                val request = buildDispatchRequest(action, dispatchId)
-                val response = socket.awaitResponse(
-                    ServerRequest(
-                        id = dispatchId.toString(),
-                        type = ServerRequest.Type.DISPATCH_REQUEST,
-                        data = Json.encodeToString(request)
+                println("starting dispatch -- currentState --> $currentState")
+                println("History at start --> \n\t${history.joinToString("\n\t") { it.toString() }}")
+                val request: DispatchRequest
+                dispatchMutex.withLock {
+                    request = buildDispatchRequest(action, dispatchId)
+                    println("sending request --> $request")
+                    val response = socket.awaitResponse(
+                        ServerRequest(
+                            responseCorrelationId = dispatchId.toString(),
+                            type = ServerRequest.Type.DISPATCH_REQUEST,
+                            data = Json.encodeToString(request)
+                        )
                     )
-                )
-                handleServerCommand(action, response)
-                val dispatch = Snapshot(action, currentState)
-                historyMutex.withLock {
-                    history.add(dispatch)
-                    dispatchMap[dispatchId] = dispatch
+                    println("response received --> $response")
+                    handleServerCommand(action, response, dispatchId)
                 }
                 socket.send(
                     buildDispatchResult(
@@ -90,39 +97,58 @@ class DevToolsEnhancer<State: Any, Action: Any>(
                 )
             }
 
-            private suspend fun handleServerCommand(action: Action, command: Command) {
+            private suspend fun handleServerCommand(action: Action, command: Command, dispatchId: UUID) {
                 when (command.command) {
-                    "continue" -> handleContinueCommand(action, command)
-                    "pause" -> handlePauseCommand(action, command)
-                    "next" -> handleNextCommand(action, command)
+                    "continue" -> handleContinueCommand(action, dispatchId)
+                    "pause" -> handlePauseCommand(action, dispatchId)
+                    "next" -> handleNextCommand(action, dispatchId)
                     "previous" -> handlePreviousCommand(action, command)
                     "replay" -> handleReplayCommand(action, command)
-                    "override" -> handleOverrideCommand(action, command)
+                    "override" -> handleOverrideCommand(action, command, dispatchId)
                 }
             }
 
-            private suspend fun handleContinueCommand(action: Action, command: Command) {
+            private suspend fun handleContinueCommand(action: Action, dispatchId: UUID) {
                 println("Received Continue Command")
                 store.dispatch(action)
+                val dispatch = Snapshot(action, currentState)
+                historyMutex.withLock {
+                    history.add(dispatch)
+                    dispatchMap[dispatchId] = dispatch
+                }
             }
 
-            private suspend fun handlePauseCommand(action: Action, command: Command) {
+            private suspend fun handlePauseCommand(action: Action, dispatchId: UUID) {
                 println("Received Pause Command")
                 store.dispatch(action)
+                val dispatch = Snapshot(action, currentState)
+                historyMutex.withLock {
+                    history.add(dispatch)
+                    dispatchMap[dispatchId] = dispatch
+                }
             }
 
-            private suspend fun handleNextCommand(action: Action, command: Command) {
+            private suspend fun handleNextCommand(action: Action, dispatchId: UUID) {
                 println("Received Next Command")
                 store.dispatch(action)
+                val dispatch = Snapshot(action, currentState)
+                historyMutex.withLock {
+                    history.add(dispatch)
+                    dispatchMap[dispatchId] = dispatch
+                }
             }
 
             private suspend fun handlePreviousCommand(action: Action, command: Command) {
                 println("Received Previous Command")
                 try {
                     val dispatchOverride = historyMutex.withLock {
-                        history[history.lastIndex - 1]
+                        println("History Before --> \n\t${history.joinToString("\n\t") { it.toString() }}")
+                        history.removeAt(history.lastIndex).also {
+                            println("History After --> \n\t${history.joinToString("\n\t") { it.toString() }}")
+                        }
                     }
-                    stateOverride.emit(dispatchOverride.state)
+                    __internalstateOverride[name]
+                    forceStateChange(dispatchOverride.state)
                 } catch (e: Throwable) {
                     println(e)
                 }
@@ -136,16 +162,26 @@ class DevToolsEnhancer<State: Any, Action: Any>(
                 }
 
                 dispatchToReplay?.let {
-                    stateOverride.emit(it.state)
+                    forceStateChange(it.state)
+                }
+                val dispatch = Snapshot(action, currentState)
+                historyMutex.withLock {
+                    history.add(dispatch)
+                    dispatchMap[dispatchId] = dispatch
                 }
             }
 
-            private suspend fun handleOverrideCommand(action: Action, command: Command) {
+            private suspend fun handleOverrideCommand(action: Action, command: Command, dispatchId: UUID) {
                 println("Received Override Command")
                 val actionContainer = Json.decodeFromString<org.mattsho.shoebox.devtools.common.Action>(command.payload ?: "")
                 val actionOverride = actionDeserializer(actionContainer)
 
                 store.dispatch(actionOverride)
+                val dispatch = Snapshot(action, currentState)
+                historyMutex.withLock {
+                    history.add(dispatch)
+                    dispatchMap[dispatchId] = dispatch
+                }
             }
 
             private suspend fun buildDispatchRequest(action: Action, id: UUID): DispatchRequest {
@@ -166,7 +202,7 @@ class DevToolsEnhancer<State: Any, Action: Any>(
 
             private suspend fun buildDispatchResult(action: Action, id: UUID, request: DispatchRequest): ServerRequest {
                 return ServerRequest(
-                    id = null,
+                    responseCorrelationId = null,
                     type = ServerRequest.Type.DISPATCH_RESULT,
                     Json.encodeToString(
                         DispatchResult(
@@ -189,7 +225,13 @@ class DevToolsEnhancer<State: Any, Action: Any>(
                         )
                     )
                 )
+            }
 
+            private fun forceStateChange(state: State) {
+                with(__internalstateOverride[name] as? MutableStateFlow<State>) {
+                    println("Overriding State --> ${this.toString()} --> $state")
+                    this?.update { state }
+                }
             }
 
         }

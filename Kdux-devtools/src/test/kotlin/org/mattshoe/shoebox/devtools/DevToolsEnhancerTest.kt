@@ -1,15 +1,11 @@
 package org.mattshoe.shoebox.devtools
 
 import com.google.gson.Gson
-import kdux.kdux
 import kdux.reducer
 import kdux.store
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runBlockingTest
-import kotlinx.coroutines.test.runTest
-import org.junit.Assert.*
 import org.junit.Test
 
 data class TestAction(val value: Int)
@@ -21,9 +17,7 @@ class DevToolsEnhancerTest {
 
     @Test
     fun test() = runBlocking {
-
-        repeat(10) { storeNumber ->
-            delay(500)
+        repeat(1) { storeNumber ->
             launch {
                 val store = store<TestState, TestAction>(
                     initialState = TestState(0),
@@ -33,26 +27,30 @@ class DevToolsEnhancerTest {
                 ) {
                     name("TestStore$storeNumber")
                     devtools(
-                        {
+                        actionSerializer = {
                             gson.toJson(it)
                         },
-                        {
+                        actionDeserializer = {
                             gson.fromJson(it.json, TestAction::class.java)
                         },
-                        {
+                        stateSerializer = {
                             gson.toJson(it)
                         },
-                        {
+                        stateDeserializer = {
                             gson.fromJson(it.json, TestState::class.java)
                         }
                     )
                 }
 
-                repeat (20) {
+                repeat (10) {
                     delay(1000)
                     store.dispatch(TestAction(1))
                 }
             }
+        }
+
+        while (true) {
+            delay(100)
         }
     }
 }

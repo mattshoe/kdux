@@ -9,7 +9,7 @@ import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Registration
 interface DevToolsServer {
     val dispatchRequestStream: Flow<DispatchRequest>
     val dispatchResultStream: Flow<DispatchResult>
-    val registrationStream: Flow<Registration>
+    val registrationStream: Flow<RegistrationChange>
     fun send(userCommand: UserCommand)
     fun debug(storeName: String?)
     fun start()

@@ -3,6 +3,8 @@ package org.mattshoe.shoebox.kdux
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
+val __internalstateOverride = mutableMapOf<String, MutableStateFlow<*>>()
+
 /**
  * Default implementation of the [Store] interface that manages the state and handles
  * dispatched actions by passing them through the middleware chain and then reducing them into a new state.
@@ -23,10 +25,13 @@ internal class DefaultStore<State: Any, Action: Any>(
     private val _state = MutableStateFlow(initialState)
 
     override val name = customName ?: super.toString()
-
     override val state: Flow<State> = _state.asStateFlow()
     override val currentState: State
         get() = _state.value
+
+    init {
+        __internalstateOverride[name] = _state
+    }
 
     override suspend fun dispatch(action: Action) {
         processMiddleware(0, action)
@@ -72,12 +77,3 @@ internal class DefaultStore<State: Any, Action: Any>(
         }
     }
 }
-
-private data class DispatchEvent<Action: Any>(
-    val action: Action,
-    val completableDeferred: CompletableDeferred<DispatchResult>
-)
-
-data class DispatchResult(
-    val error: Throwable?
-)
