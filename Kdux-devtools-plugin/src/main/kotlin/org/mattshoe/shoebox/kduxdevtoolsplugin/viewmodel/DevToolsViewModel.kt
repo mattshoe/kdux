@@ -16,6 +16,7 @@ import org.mattsho.shoebox.devtools.common.DispatchResult
 import org.mattshoe.shoebox.kduxdevtoolsplugin.server.*
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Command
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Registration
+import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.TimeStamper
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -110,12 +111,14 @@ class DevToolsViewModel(
                                 newState = it.newState.copy(
                                     json = prettyPrintJson(it.newState.json)
                                 ),
-                                timestamp = convertToHumanReadable(it.timestamp)
+                                timestamp = TimeStamper.pretty(it.timestamp)
                             )
                         )
                     )
                     _dispatchStream.update {
-                        dispatchLog.toList()
+                        dispatchLog.toList().sortedBy {
+                            it.result.timestamp
+                        }.reversed()
                     }
                 }
             }.launchIn(coroutineScope)

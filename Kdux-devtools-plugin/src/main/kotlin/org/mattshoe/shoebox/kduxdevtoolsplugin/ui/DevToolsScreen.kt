@@ -6,15 +6,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
@@ -25,10 +26,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.intellij.testFramework.requireIs
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.DevToolsViewModel
 import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.DispatchLog
 import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.State
@@ -39,27 +37,39 @@ fun DevToolsScreen(
     viewModel: DevToolsViewModel
 ) {
     val state by viewModel.state.collectAsState()
-    val dispatchLog: List<DispatchLog> by viewModel.dispatchStream.collectAsState(emptyList())
+    val dispatchLogs: List<DispatchLog> by viewModel.dispatchStream.collectAsState(emptyList())
+    var selectedStore: String? by remember { mutableStateOf(null) }
     Column {
         when (state) {
-            is State.Stopped -> StoreNameInput(viewModel)
+            is State.Stopped -> StoreNameInput(viewModel) {
+                selectedStore = it
+            }
             is State.Debugging, is State.Paused -> {
-                val storeName = (state as? State.Debugging)?.storeName ?: (state as State.Paused).storeName
-                DebugWindow(storeName, viewModel)
+                DebugWindow(selectedStore!!, viewModel) {
+                    selectedStore = null
+                }
             }
         }
-        DispatchLogList(dispatchLog)
+        DispatchLogList(
+            selectedStore,
+            dispatchLogs
+        )
     }
 
 }
 
 @Composable
 fun StoreNameInput(
-    viewModel: DevToolsViewModel
+    viewModel: DevToolsViewModel,
+    onStoreSelected: (String?) -> Unit
 ) {
-    var storeName: String by remember {
-        mutableStateOf("")
+    var storeName: String? by remember {
+        mutableStateOf(null)
     }
+    val options by viewModel.registrationStream.collectAsState(emptyList())
+    var selectedStore: String? by remember { mutableStateOf(null) }
+    var debugEnabled: Boolean by remember { mutableStateOf(false) }
+    val placeholder = "Select a store to debug"
 
     Row(
         modifier = Modifier
@@ -67,27 +77,38 @@ fun StoreNameInput(
             .wrapContentHeight(Alignment.Bottom)
             .padding(8.dp),
         horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.Bottom
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        TextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            value = storeName,
-            onValueChange = { newText ->
-                storeName = newText
-            },
-            singleLine = true,
-            trailingIcon = {
-                DebugIcon(
-                    modifier = Modifier
-                        .size(24.dp)
-                ) {
-                    viewModel.handleIntent(UserIntent.StartDebugging(storeName))
+        Dropdown(
+            modifier = Modifier.weight(1f),
+            options = options.map { it.storeName },
+            selectedOption = selectedStore,
+            placeholder = placeholder,
+            onOptionSelected = {
+                selectedStore = it
+                if (it != placeholder) {
+                    debugEnabled = true
+                    storeName = it
+                    onStoreSelected(it)
+                } else {
+                    debugEnabled = false
+                    storeName = null
+                    onStoreSelected(null)
                 }
-            },
-            label = { Text("Store Name") }
+            }
         )
+        Disabler(
+            isDisabled = !debugEnabled
+        ) {
+            DebugIcon(
+                modifier = Modifier
+                    .size(32.dp)
+            ) {
+                storeName?.let {
+                    viewModel.handleIntent(UserIntent.StartDebugging(it))
+                }
+            }
+        }
     }
 }
 
@@ -95,7 +116,8 @@ fun StoreNameInput(
 @Composable
 fun DebugWindow(
     storeName: String,
-    viewModel: DevToolsViewModel
+    viewModel: DevToolsViewModel,
+    onClose: () -> Unit
 ) {
     val isPaused by derivedStateOf {
         viewModel.state.value is State.Paused
@@ -139,6 +161,7 @@ fun DebugWindow(
             }
             CloseIcon {
                 viewModel.handleIntent(UserIntent.StopDebugging(storeName))
+                onClose()
             }
         }
 
@@ -148,20 +171,11 @@ fun DebugWindow(
             title = "Incoming Dispatch Request"
         )
 
-        Box(
+        Disabler(
             modifier = Modifier
                 .fillMaxWidth()
-                .wrapContentHeight()
-                .alpha(if (isDisabled) 0.4f else 1f)  // Reduce opacity when disabled
-                .pointerInput(isDisabled) {  // Block input if disabled
-                    if (isDisabled) {
-                        awaitPointerEventScope {
-                            while (true) {
-                                awaitPointerEvent()  // Consume all touch events
-                            }
-                        }
-                    }
-                }
+                .wrapContentHeight(),
+            isDisabled
         ) {
             Row(
                 modifier = Modifier
@@ -234,14 +248,19 @@ fun DebugWindow(
     }
 
 
-
 }
 
 
 @Composable
-fun DispatchLogList(dispatchLog: List<DispatchLog>) {
+fun DispatchLogList(
+    selectedStore: String?,
+    dispatchLog: List<DispatchLog>
+) {
     // Store the expanded states of the items in a mutable state map
     val expandedStates = remember { mutableStateMapOf<String, Boolean>() }
+    val filteredLogs = dispatchLog.filter {
+        selectedStore == null || it.result.storeName == selectedStore
+    }
 
     SectionTitle(title = "Dispatch History")
     LazyColumn(
@@ -249,7 +268,7 @@ fun DispatchLogList(dispatchLog: List<DispatchLog>) {
             .fillMaxWidth()
             .fillMaxHeight()
     ) {
-        items(dispatchLog) { log ->
+        items(filteredLogs) { log ->
             DispatchLogRow(log, expandedStates)
         }
     }
@@ -500,3 +519,104 @@ fun SectionTitle(
         )
     }
 }
+
+@Composable
+fun Dropdown(
+    modifier: Modifier = Modifier,
+    options: List<String>,
+    selectedOption: String?,
+    placeholder: String,
+    onOptionSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Colors.DarkGray)
+            .padding(8.dp)
+            .then(modifier)
+    ) {
+        // Trigger for the dropdown menu
+        Text(
+            text = if (selectedOption.isNullOrBlank()) placeholder else selectedOption,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    expanded = true
+                }
+                .padding(4.dp)
+                .drawBehind {
+                    // Draw the bottom border only
+                    val strokeWidth = 1.dp.toPx()  // Thickness of the bottom border
+                    val y = size.height  // Bottom position
+                    drawLine(
+                        color = Color.Gray,
+                        start = Offset(0f, y),
+                        end = Offset(size.width, y),
+                        strokeWidth = strokeWidth
+                    )
+                },
+            color = if (selectedOption.isNullOrBlank()) Color.Gray else Colors.LightGray,
+            fontSize = 20.sp
+        )
+
+        // Dropdown menu
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxWidth()
+                .background(Colors.DarkGray)
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Colors.DarkGray)
+                    ,
+                    onClick = {
+                        onOptionSelected(option)
+                        expanded = false
+                    }
+                ) {
+                    MonospaceText(
+                        text = option,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun Disabler(
+    modifier: Modifier = Modifier,
+    isDisabled: Boolean,
+    contents: @Composable () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .then(modifier)
+            .alpha(if (isDisabled) 0.4f else 1f)  // Reduce opacity when disabled
+            .gesturesDisabled(isDisabled)
+    ) {
+        contents()
+    }
+}
+
+fun Modifier.gesturesDisabled(disabled: Boolean = true) =
+    if (disabled) {
+        pointerInput(Unit) {
+            awaitPointerEventScope {
+                // we should wait for all new pointer events
+                while (true) {
+                    awaitPointerEvent(pass = PointerEventPass.Initial)
+                        .changes
+                        .forEach(PointerInputChange::consume)
+                }
+            }
+        }
+    } else {
+        this
+    }

@@ -5,6 +5,7 @@ import kdux.kdux
 import kdux.reducer
 import kdux.store
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
@@ -21,32 +22,37 @@ class DevToolsEnhancerTest {
     @Test
     fun test() = runBlocking {
 
-        val store = store<TestState, TestAction>(
-            initialState = TestState(0),
-            reducer = reducer { state, action ->
-                TestState(action.value + state.value)
-            }
-        ) {
-            name("test")
-            devtools(
-                {
-                    gson.toJson(it)
-                },
-                {
-                    gson.fromJson(it.json, TestAction::class.java)
-                },
-                {
-                    gson.toJson(it)
-                },
-                {
-                    gson.fromJson(it.json, TestState::class.java)
+        repeat(10) { storeNumber ->
+            delay(500)
+            launch {
+                val store = store<TestState, TestAction>(
+                    initialState = TestState(0),
+                    reducer = reducer { state, action ->
+                        TestState(action.value + state.value)
+                    }
+                ) {
+                    name("TestStore$storeNumber")
+                    devtools(
+                        {
+                            gson.toJson(it)
+                        },
+                        {
+                            gson.fromJson(it.json, TestAction::class.java)
+                        },
+                        {
+                            gson.toJson(it)
+                        },
+                        {
+                            gson.fromJson(it.json, TestState::class.java)
+                        }
+                    )
                 }
-            )
-        }
 
-        repeat (20) {
-            delay(1000)
-            store.dispatch(TestAction(1))
+                repeat (20) {
+                    delay(1000)
+                    store.dispatch(TestAction(1))
+                }
+            }
         }
     }
 }
