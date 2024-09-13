@@ -15,30 +15,29 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.mattsho.shoebox.devtools.common.ServerRequest
-import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.CommandPayload
+import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Command
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.ServerMessage
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Registration
 
-internal class KtorDebugSession(
+internal class ClientDebugSessionImpl(
     id: String,
     httpClient: HttpClient,
     private val coroutineScope: CoroutineScope
-): DebugSession {
+): ClientDebugSession {
     private lateinit var socket: WebSocketSession
     private val socketInitialized = CompletableDeferred<Boolean>()
-    private val _adHocCommands = MutableSharedFlow<CommandPayload>(
+    private val _adHocCommands = MutableSharedFlow<Command>(
         replay = 0,
         extraBufferCapacity = 100,
         onBufferOverflow = BufferOverflow.SUSPEND
     )
-    private val responseMap = mutableMapOf<String, CompletableDeferred<CommandPayload>>()
+    private val responseMap = mutableMapOf<String, CompletableDeferred<Command>>()
     private val responseMutex = Mutex()
 
     override val adHocCommands = _adHocCommands.asSharedFlow()
 
     init {
         coroutineScope.launch {
-            log("Initializing socket")
             try {
                 socket = httpClient.webSocketSession(
                     HttpMethod.Get,
@@ -58,7 +57,6 @@ internal class KtorDebugSession(
                 return@launch
             }
 
-            log("Sending registration: $id")
             socket.outgoing.send(
                 Frame.Text(
                     Json.encodeToString(
@@ -69,50 +67,44 @@ internal class KtorDebugSession(
                     )
                 )
             )
-            log("Consuming responses")
+
             socket.incoming.consumeAsFlow()
                 .filter {
-                    log("Response Received --> $it")
                     it is Frame.Text
                 }
                 .map {
                     it as Frame.Text
                 }
                 .onEach {
-                    val serverMessage = Json.decodeFromString<ServerMessage>(it.readText())
-                    log("Message Parsed --> $serverMessage")
-                    val command = Json.decodeFromString<CommandPayload>(serverMessage.data)
-                    if (serverMessage.id != null) {
-                        log("Message is a response!")
-                        val completable = responseMutex.withLock {
-                            responseMap[serverMessage.id]
-                        }
-                        if (completable == null) {
-                            log("Emitting AdHoc command --> $command")
-                            _adHocCommands.emit(command)
+                    try {
+                        val serverMessage = Json.decodeFromString<ServerMessage>(it.readText())
+                        val command = Json.decodeFromString<Command>(serverMessage.data)
+                        if (serverMessage.id != null) {
+                            val completable = responseMutex.withLock {
+                                responseMap[serverMessage.id]
+                            }
+                            if (completable == null) {
+                                _adHocCommands.emit(command)
+                            } else {
+                                completable.complete(command)
+                            }
                         } else {
-                            log("Completing Response --> $command")
-                            log("Completable --> $completable")
-                            completable.complete(command)
-                            log("Response completed")
+                            _adHocCommands.emit(command)
                         }
-                    } else {
-                        log("Emitting AdHoc command -> $command")
-                        _adHocCommands.emit(command)
+                    } catch (e: Throwable) {
+                        println("Response failure --> $it")
                     }
                 }
                 .catch {
-                    log("Response failure --> $it")
+                    println("Response failure --> $it")
                 }
                 .launchIn(this)
-            log("Completing Initialization")
+
             socketInitialized.complete(true)
-            log("Completed Initialization")
         }
     }
 
     override suspend fun send(serverRequest: ServerRequest) {
-        log("Sending ServerRequest! --> $serverRequest")
         if (socketInitialized.await()) {
             socket.send(
                 Frame.Text(
@@ -122,9 +114,8 @@ internal class KtorDebugSession(
         }
     }
 
-    override suspend fun awaitResponse(serverRequest: ServerRequest): CommandPayload {
-        log("awaitResponse(serverRequest = $serverRequest)")
-        val completableDeferred = CompletableDeferred<CommandPayload>()
+    override suspend fun awaitResponse(serverRequest: ServerRequest): Command {
+        val completableDeferred = CompletableDeferred<Command>()
 
         serverRequest.id?.let {
             responseMutex.withLock {
@@ -136,7 +127,7 @@ internal class KtorDebugSession(
         return if (socketInitialized.await()) {
             completableDeferred.await()
         } else {
-            CommandPayload("continue")
+            Command("continue")
         }
     }
 
@@ -150,8 +141,4 @@ internal class KtorDebugSession(
         }
     }
 
-}
-
-fun log(msg: Any?) {
-//    println(msg.toString())
 }

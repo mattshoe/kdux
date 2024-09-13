@@ -12,28 +12,21 @@ import kotlinx.coroutines.flow.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.mattsho.shoebox.devtools.common.*
+import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.UserCommand
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Command
-import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.CommandPayload
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Registration
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.ServerMessage
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Synchronized
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 
-private data class Session(
-    val id: UUID,
-    val storeName: String,
-    val socket: WebSocketSession
-)
-
 typealias RequestId = String
 typealias SessionId = String
 typealias StoreName = String
 
-
 class DevToolsServerImpl : DevToolsServer {
     private var coroutineScope = buildCoroutineScope()
-    private val commandStream = MutableSharedFlow<Command>()
+    private val userCommandStream = MutableSharedFlow<UserCommand>()
     private val _registrationStream = MutableSharedFlow<Registration>(
         replay = 0,
         extraBufferCapacity = 10000,
@@ -62,25 +55,20 @@ class DevToolsServerImpl : DevToolsServer {
 
     init {
         start()
-        commandStream
+        userCommandStream
             .onEach { command ->
-                println("Command Issued --> $command")
-                println("Requests --> \n\t${requestMap.access { map -> map.keys.joinToString("\n\t") { "$it: ${map[it]}" } }}")
                 val requestId = requestMap.access {
                     it.remove(command.storeName)
                 }
                 if (requestId != null) {
-                    println("Request ID --> $requestId")
                     val session = storeMap.access {
                         it[command.storeName]
                     }
-                    println("Session --> $session")
                     session?.sendMessage(
                         requestId,
                         Json.encodeToString(command.payload)
                     )
                 } else {
-                    println("No Request id! Sending message")
                     storeMap.access {
                         it[command.storeName]
                     }?.sendMessage(
@@ -95,9 +83,9 @@ class DevToolsServerImpl : DevToolsServer {
             .launchIn(coroutineScope)
     }
 
-    override fun send(command: Command) {
+    override fun send(userCommand: UserCommand) {
         coroutineScope.launch {
-            commandStream.emit(command)
+            userCommandStream.emit(userCommand)
         }
     }
 
@@ -174,7 +162,6 @@ class DevToolsServerImpl : DevToolsServer {
 
     private suspend fun WebSocketSession.dispatchRequest(serverRequest: ServerRequest, sessionId: UUID) {
         val dispatchRequest = Json.decodeFromString<DispatchRequest>(serverRequest.data)
-        log("Dispatch Request -> $dispatchRequest")
         if (storeUnderDebug != null && storeUnderDebug == dispatchRequest.storeName) {
             requestMap.update {
                 it[dispatchRequest.storeName] = dispatchRequest.dispatchId
@@ -183,7 +170,7 @@ class DevToolsServerImpl : DevToolsServer {
         } else {
             sendMessage(
                 id = dispatchRequest.dispatchId,
-                text = Json.encodeToString(CommandPayload("continue"))
+                text = Json.encodeToString(Command("continue"))
             )
         }
     }
@@ -216,8 +203,4 @@ class DevToolsServerImpl : DevToolsServer {
     }
 
     private fun buildCoroutineScope() = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-}
-
-fun log(msg: Any?) {
-//    println(msg.toString())
 }

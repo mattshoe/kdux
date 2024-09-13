@@ -1,6 +1,5 @@
 package org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel
 
-import com.android.tools.idea.wizard.template.impl.activities.viewModelActivity.src.app_package.viewModelKt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -14,7 +13,7 @@ import kotlinx.serialization.json.JsonObject
 import org.mattsho.shoebox.devtools.common.DispatchRequest
 import org.mattsho.shoebox.devtools.common.DispatchResult
 import org.mattshoe.shoebox.kduxdevtoolsplugin.server.*
-import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Command
+import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.UserCommand
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Registration
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.TimeStamper
 import java.time.Instant
@@ -74,7 +73,6 @@ class DevToolsViewModel(
     init {
         server.dispatchRequestStream
             .onEach {
-                println("Dispatch Request! --> $it")
                 _debugStream.emit(
                     it.copy(
                         currentState = it.currentState.copy(
@@ -83,15 +81,12 @@ class DevToolsViewModel(
                         action = it.action.copy(
                             json = prettyPrintJson(it.action.json)
                         )
-                    ).also { copy ->
-                        println("Copied Request --> $copy")
-                    }
+                    )
                 )
             }.launchIn(coroutineScope)
 
         server.dispatchResultStream
             .onEach {
-                println("Dispatch Log --> $it")
                 dispatchLogMutex.withLock {
                     dispatchLog.add(
                         0,
@@ -125,7 +120,6 @@ class DevToolsViewModel(
 
         server.registrationStream
             .onEach { store ->
-                println("Registration --> $store")
                 registrationMutex.withLock {
                     _registeredStores.add(store)
                     _registrationStream.update {
@@ -147,30 +141,29 @@ class DevToolsViewModel(
                 }
                 is UserIntent.StopDebugging -> {
                     server.send(
-                        Command.Continue(intent.storeName)
+                        UserCommand.Continue(intent.storeName)
                     )
                     server.debug(null)
                     _state.update { State.Stopped }
                 }
                 is UserIntent.PauseDebugging -> {
-                    server.send(Command.Pause(intent.storeName))
+                    server.send(UserCommand.Pause(intent.storeName))
                     _state.update {
                         State.Paused(intent.storeName)
                     }
                 }
                 is UserIntent.NextDispatch -> {
-                    println("Sending NextDispatch")
-                    server.send(Command.NextDispatch(intent.storeName))
+                    server.send(UserCommand.NextDispatch(intent.storeName))
                 }
                 is UserIntent.PreviousDispatch -> {
-                    server.send(Command.PreviousDispatch(intent.storeName))
+                    server.send(UserCommand.PreviousDispatch(intent.storeName))
                 }
                 is UserIntent.ReplayDispatch -> {
-                    server.send(Command.ReplayDispatch(intent.storeName, intent.dispatchId))
+                    server.send(UserCommand.ReplayDispatch(intent.storeName, intent.dispatchId))
                 }
                 is UserIntent.DispatchOverride -> {
                     server.send(
-                        Command.DispatchOverride(intent.storeName, Json.decodeFromString(intent.text))
+                        UserCommand.DispatchOverride(intent.storeName, Json.decodeFromString(intent.text))
                     )
                 }
             }

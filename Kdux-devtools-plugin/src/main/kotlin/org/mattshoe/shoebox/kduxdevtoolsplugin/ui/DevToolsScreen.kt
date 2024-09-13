@@ -123,7 +123,6 @@ fun DebugWindow(
         viewModel.state.value is State.Paused
     }
     val incomingDispatch by viewModel.debugStream.collectAsState(null)
-    println("Incoming dispatch composed with --> $incomingDispatch")
     val isDisabled by derivedStateOf { incomingDispatch == null }
 
     Column {
