@@ -48,24 +48,28 @@ class DevToolsServerImpl : DevToolsServer {
         start()
         userCommandStream
             .onEach { command ->
-                val requestId = requestMap.access {
-                    it.remove(command.storeName)
-                }
-                if (requestId != null) {
-                    val session = storeMap.access {
-                        it[command.storeName]
+                try {
+                    val requestId = requestMap.access {
+                        it.remove(command.storeName)
                     }
-                    session?.sendMessage(
-                        requestId,
-                        Json.encodeToString(command.payload)
-                    )
-                } else {
-                    storeMap.access {
-                        it[command.storeName]
-                    }?.sendMessage(
-                        null,
-                        Json.encodeToString(command.payload)
-                    )
+                    if (requestId != null) {
+                        val session = storeMap.access {
+                            it[command.storeName]
+                        }
+                        session?.sendMessage(
+                            requestId,
+                            Json.encodeToString(command.payload)
+                        )
+                    } else {
+                        storeMap.access {
+                            it[command.storeName]
+                        }?.sendMessage(
+                            null,
+                            Json.encodeToString(command.payload)
+                        )
+                    }
+                } catch (e: Throwable) {
+                    println("Error processing command --> $e")
                 }
             }
             .catch {
@@ -80,7 +84,7 @@ class DevToolsServerImpl : DevToolsServer {
         }
     }
 
-    override fun debug(storeName: String?) {
+    override fun storeUnderDebug(storeName: String?) {
         storeUnderDebug = storeName
     }
 
@@ -205,16 +209,17 @@ class DevToolsServerImpl : DevToolsServer {
     }
 
     private suspend fun WebSocketSession.sendMessage(id: String?, text: String) {
-        this.send(
-            Frame.Text(
-                Json.encodeToString(
-                    ServerMessage(
-                        responseCorrelationId = id,
-                        data = text
-                    )
+        try {
+            val message = Json.encodeToString(
+                ServerMessage(
+                    responseCorrelationId = id,
+                    data = text
                 )
             )
-        )
+            this.send(Frame.Text(message))
+        } catch (e: Throwable) {
+            println(e)
+        }
     }
 
     private fun buildCoroutineScope() = CoroutineScope(SupervisorJob() + Dispatchers.IO)

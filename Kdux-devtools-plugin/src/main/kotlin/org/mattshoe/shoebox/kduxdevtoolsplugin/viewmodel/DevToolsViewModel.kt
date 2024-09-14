@@ -87,6 +87,10 @@ class DevToolsViewModel(
                 )
             }.launchIn(coroutineScope)
 
+        state.onEach {
+            println("Emitting State --> $it")
+        }.launchIn(coroutineScope)
+
         server.dispatchResultStream
             .onEach {
                 dispatchLogMutex.withLock {
@@ -147,20 +151,26 @@ class DevToolsViewModel(
 
     override fun handleIntent(intent: UserIntent) {
         coroutineScope.launch {
+            println("Handling Intent --> $intent")
             _debugStream.emit(null)
             when (intent) {
                 is UserIntent.StartDebugging -> {
-                    server.debug(intent.storeName)
+                    server.storeUnderDebug(intent.storeName)
                     _state.update {
                         State.Debugging(intent.storeName)
                     }
                 }
                 is UserIntent.StopDebugging -> {
-                    server.send(
-                        UserCommand.Continue(intent.storeName)
-                    )
-                    server.debug(null)
-                    _state.update { State.Stopped }
+                    try {
+                        server.send(
+                            UserCommand.Continue(intent.storeName)
+                        )
+                        server.storeUnderDebug(null)
+                    } catch (e: Throwable) {
+                        println(e)
+                    } finally {
+                        _state.update { State.Stopped }
+                    }
                 }
                 is UserIntent.PauseDebugging -> {
                     server.send(UserCommand.Pause(intent.storeName))

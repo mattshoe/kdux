@@ -55,7 +55,6 @@ class DevToolsEnhancer<State: Any, Action: Any>(
 
                 state
                     .onEach { newState ->
-                        println("New State --> $newState")
                         socket.send(
                             ServerRequest(
                                 null,
