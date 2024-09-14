@@ -42,8 +42,8 @@ class DevToolsEnhancerTest {
                     )
                 }
 
-                repeat (10) {
-                    delay(1000)
+                repeat (100) {
+                    delay(100)
                     store.dispatch(TestAction(1))
                 }
             }

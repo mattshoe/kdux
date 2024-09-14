@@ -11,11 +11,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.mattsho.shoebox.devtools.common.*
-import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.UserCommand
-import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Command
-import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Registration
-import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.ServerMessage
-import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Synchronized
+import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.*
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -40,10 +36,13 @@ class DevToolsServerImpl : DevToolsServer {
     private val sessionMap = Synchronized(mutableMapOf<SessionId, Registration>())
     private val requestMap = Synchronized(mutableMapOf<StoreName, RequestId>())
     private var storeUnderDebug: String? = null
+    private val _currentState = MutableSharedFlow<State>()
 
     override val dispatchRequestStream = _dispatchRequestStream.asSharedFlow()
     override val dispatchResultStream = _dispatchResultStream.asSharedFlow()
     override val registrationStream = _registrationStream.asSharedFlow()
+    override val currentStateStream = _currentState.asSharedFlow()
+
 
     init {
         start()
@@ -148,6 +147,7 @@ class DevToolsServerImpl : DevToolsServer {
                 ServerRequest.Type.REGISTRATION -> register(serverRequest, sessionId)
                 ServerRequest.Type.DISPATCH_REQUEST -> dispatchRequest(serverRequest, sessionId)
                 ServerRequest.Type.DISPATCH_RESULT -> dispatchResult(serverRequest, sessionId)
+                ServerRequest.Type.CURRENT_STATE -> currentState(serverRequest, sessionId)
             }
         } catch (e: Exception) {
             println(e)
@@ -194,6 +194,13 @@ class DevToolsServerImpl : DevToolsServer {
         }
         storeMap.update {
             it.remove(registration?.storeName)
+        }
+    }
+
+    private suspend fun currentState(serverRequest: ServerRequest, sessionId: UUID) {
+        val currentState = Json.decodeFromString<CurrentState>(serverRequest.data)
+        if (currentState.storeName == storeUnderDebug) {
+            _currentState.emit(currentState.state)
         }
     }
 

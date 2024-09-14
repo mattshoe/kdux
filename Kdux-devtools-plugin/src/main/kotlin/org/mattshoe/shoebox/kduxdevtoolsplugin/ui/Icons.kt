@@ -163,6 +163,36 @@ fun CloseIcon(
     )
 }
 
+@Composable
+fun StepOverIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = Colors.LightGray,
+    onClick: () -> Unit = { }
+) {
+    Icon(
+        modifier,
+        resource = "/step_over_icon.svg",
+        description = "Step over. Executes this dispatch and waits for the next.",
+        tint = tint,
+        onClick = onClick
+    )
+}
+
+@Composable
+fun StepBackIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = Colors.LightGray,
+    onClick: () -> Unit = { }
+) {
+    Icon(
+        modifier,
+        resource = "/step_back_icon.svg",
+        description = "Step back. Restores the store's previous state.",
+        tint = tint,
+        onClick = onClick
+    )
+}
+
 
 @Composable
 fun Icon(

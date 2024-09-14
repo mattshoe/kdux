@@ -39,8 +39,8 @@ sealed interface UserIntent {
     data class StopDebugging(val storeName: String): UserIntent
     data class StartDebugging(val storeName: String): UserIntent
     data class PauseDebugging(val storeName: String): UserIntent
-    data class NextDispatch(val storeName: String): UserIntent
-    data class PreviousDispatch(val storeName: String): UserIntent
+    data class StepOver(val storeName: String): UserIntent
+    data class StepBack(val storeName: String): UserIntent
     data class ReplayDispatch(val storeName: String, val dispatchId: String): UserIntent
     data class DispatchOverride(val storeName: String, val text: String): UserIntent
 }
@@ -57,6 +57,7 @@ class DevToolsViewModel(
     private val dispatchLogMutex = Mutex()
     private val _registeredStores = mutableListOf<Registration>()
     private val _registrationStream = MutableStateFlow(emptyList<Registration>())
+    private val _currentStateStream = MutableSharedFlow<org.mattsho.shoebox.devtools.common.State>()
     private val _debugStream = MutableSharedFlow<DispatchRequest?>()
     private val registrationMutex = Mutex()
     private val prettyJson = Json {
@@ -69,6 +70,7 @@ class DevToolsViewModel(
     val dispatchStream: Flow<List<DispatchLog>> = _dispatchStream.asSharedFlow()
     val registrationStream: Flow<List<Registration>> = _registrationStream.asStateFlow()
     val debugStream: Flow<DispatchRequest?> = _debugStream.asSharedFlow()
+    val currentStateStream: Flow<org.mattsho.shoebox.devtools.common.State?> = _currentStateStream.asSharedFlow()
 
     init {
         server.dispatchRequestStream
@@ -112,7 +114,7 @@ class DevToolsViewModel(
                     )
                     _dispatchStream.update {
                         try {
-                            dispatchLog.toList().sortedBy {
+                            dispatchLog.sortedBy {
                                 it.result.timestamp
                             }.reversed().take(500)
                         } catch (e: Throwable) {
@@ -132,14 +134,14 @@ class DevToolsViewModel(
                         _registeredStores.add(registrationChange.value)
                     }
                     _registrationStream.update {
-                        try {
-                            _registeredStores.toList()
-                        } catch (e: Throwable) {
-                            println(e)
-                            emptyList()
-                        }
+                        _registeredStores
                     }
                 }
+            }.launchIn(coroutineScope)
+
+        server.currentStateStream
+            .onEach {
+                _currentStateStream.emit(it)
             }.launchIn(coroutineScope)
     }
 
@@ -166,10 +168,10 @@ class DevToolsViewModel(
                         State.Paused(intent.storeName)
                     }
                 }
-                is UserIntent.NextDispatch -> {
+                is UserIntent.StepOver -> {
                     server.send(UserCommand.NextDispatch(intent.storeName))
                 }
-                is UserIntent.PreviousDispatch -> {
+                is UserIntent.StepBack -> {
                     server.send(UserCommand.PreviousDispatch(intent.storeName))
                 }
                 is UserIntent.ReplayDispatch -> {

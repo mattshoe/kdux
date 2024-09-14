@@ -123,13 +123,13 @@ fun DebugWindow(
         viewModel.state.value is State.Paused
     }
     val incomingDispatch by viewModel.debugStream.collectAsState(null)
+    val currentState by viewModel.currentStateStream.collectAsState(null)
     val isDisabled by derivedStateOf { incomingDispatch == null }
 
     Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .wrapContentHeight(Alignment.Bottom)
                 .padding(8.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.Bottom,
@@ -140,8 +140,8 @@ fun DebugWindow(
                 modifier = Modifier.weight(1f)
             ) {
                 Spacer(Modifier.width(8.dp))
-                PreviousIcon {
-                    viewModel.handleIntent(UserIntent.PreviousDispatch(storeName))
+                StepBackIcon {
+                    viewModel.handleIntent(UserIntent.StepBack(storeName))
                 }
                 Spacer(Modifier.width(8.dp))
                 if (isPaused) {
@@ -154,8 +154,8 @@ fun DebugWindow(
                     }
                 }
                 Spacer(Modifier.width(8.dp))
-                NextIcon {
-                    viewModel.handleIntent(UserIntent.NextDispatch(storeName))
+                StepOverIcon {
+                    viewModel.handleIntent(UserIntent.StepOver(storeName))
                 }
             }
             CloseIcon {
@@ -164,10 +164,33 @@ fun DebugWindow(
             }
         }
 
+        SectionTitle(
+            modifier = Modifier.padding(end = 4.dp),
+            title = storeName
+        )
+
+        Row {
+            MonospaceText(
+                text = "CurrentState:",
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(Modifier.width(8.dp))
+            MonospaceText(
+                text = currentState?.name ?: "UNKNOWN",
+            )
+        }
+
+        FormattedCodeBox(
+            Modifier.fillMaxWidth(),
+            text = currentState?.json ?: "UNKNOWN"
+        )
+
+
+
 
         SectionTitle(
             modifier = Modifier.padding(end = 4.dp),
-            title = "Incoming Dispatch Request"
+            title = "Incoming Dispatch"
         )
 
         Disabler(
@@ -176,74 +199,42 @@ fun DebugWindow(
                 .wrapContentHeight(),
             isDisabled
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(400.dp),
-                verticalAlignment = Alignment.Bottom,
-            ) {
-
-                Column(
-                    Modifier.fillMaxHeight()
-                ) {
-                    Row {
-                        MonospaceText(
-                            text = "ID:",
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        SelectionContainer {
-                            MonospaceText(
-                                text = incomingDispatch?.dispatchId ?: ""
-                            )
-                        }
-                    }
-                    Row {
-                        MonospaceText(
-                            text = "Store:",
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        SelectionContainer {
-                            MonospaceText(
-                                text = incomingDispatch?.storeName ?: ""
-                            )
-                        }
-                    }
-
-                    Column(
-                        Modifier.fillMaxWidth()
-                    ) {
-                        MonospaceText(
-                            text = "CurrentState:",
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        SelectionContainer {
-                            FormattedCodeBox(
-                                text = incomingDispatch?.currentState?.json ?: "UNKNOWN"
-                            )
-                        }
-                    }
+            Column {
+                Row {
+                    MonospaceText(
+                        text = "ID:",
+                        fontWeight = FontWeight.Bold
+                    )
                     Spacer(Modifier.width(4.dp))
+                    SelectionContainer {
+                        MonospaceText(
+                            text = incomingDispatch?.dispatchId ?: ""
+                        )
+                    }
+                }
+                Spacer(Modifier.width(4.dp))
+                Row {
                     MonospaceText(
                         text = "Action:",
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(Modifier.width(4.dp))
-                    EditableCodeBox(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        text = incomingDispatch?.action?.json ?: "UNKNOWN"
-                    ) {
-
-                    }
+                    MonospaceText(
+                        text = incomingDispatch?.action?.name ?: "UNKNOWN"
+                    )
+                }
+                EditableCodeBox(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    text = incomingDispatch?.action?.json ?: "UNKNOWN"
+                ) {
+                    // TODO
                 }
             }
-            Spacer(
-                modifier = Modifier.fillMaxWidth().height(16.dp)
-            )
         }
+        Spacer(
+            modifier = Modifier.fillMaxWidth().height(16.dp)
+        )
     }
 
 

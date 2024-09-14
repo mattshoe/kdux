@@ -16,6 +16,7 @@ import org.mattshoe.shoebox.kdux.Enhancer
 import org.mattshoe.shoebox.kdux.Store
 import org.mattshoe.shoebox.kdux.__internalstateOverride
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Command
+import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.CurrentState
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.TimeStamper
 import java.util.UUID
 
@@ -44,19 +45,32 @@ class DevToolsEnhancer<State: Any, Action: Any>(
 
             init {
                 socket.adHocCommands
-                    .onEach {
+                    .onEach { message ->
                         try {
-                            val actionWrapper: org.mattsho.shoebox.devtools.common.Action = Json.decodeFromString(it.payload ?: "")
-                            val action = actionDeserializer(actionWrapper)
-                            handleServerCommand(action, it, UUID.randomUUID())
+                            handleServerCommand(null, message, UUID.randomUUID())
                         } catch (e: Throwable) {
                             println(e)
                         }
                     }.launchIn(coroutineScope)
 
                 state
-                    .onEach {
-                        println("New State --> $it")
+                    .onEach { newState ->
+                        println("New State --> $newState")
+                        socket.send(
+                            ServerRequest(
+                                null,
+                                ServerRequest.Type.CURRENT_STATE,
+                                Json.encodeToString(
+                                    CurrentState(
+                                        storeName = name,
+                                        org.mattsho.shoebox.devtools.common.State(
+                                            newState::class.simpleName ?: "UNKNOWN",
+                                            stateSerializer(newState)
+                                        )
+                                    )
+                                )
+                            )
+                        )
                     }.launchIn(coroutineScope)
                 history.add(
                     Snapshot(null, currentState)
@@ -97,20 +111,29 @@ class DevToolsEnhancer<State: Any, Action: Any>(
                 )
             }
 
-            private suspend fun handleServerCommand(action: Action, command: Command, dispatchId: UUID) {
-                when (command.command) {
-                    "continue" -> handleContinueCommand(action, dispatchId)
-                    "pause" -> handlePauseCommand(action, dispatchId)
-                    "next" -> handleNextCommand(action, dispatchId)
-                    "previous" -> handlePreviousCommand(action, command)
-                    "replay" -> handleReplayCommand(action, command)
-                    "override" -> handleOverrideCommand(action, command, dispatchId)
+            private suspend fun handleServerCommand(action: Action?, command: Command, dispatchId: UUID) {
+                when (command.name) {
+                    "continue" -> handleContinueCommand(action, command, dispatchId)
+                    "pause" -> handlePauseCommand(action.requireFor(command), dispatchId)
+                    "next" -> handleNextCommand(action.requireFor(command), dispatchId)
+                    "previous" -> handlePreviousCommand()
+                    "replay" -> handleReplayCommand(command)
+                    "override" -> handleOverrideCommand(command, dispatchId)
                 }
             }
 
-            private suspend fun handleContinueCommand(action: Action, dispatchId: UUID) {
+            private suspend fun handleContinueCommand(action: Action?, command: Command, dispatchId: UUID) {
                 println("Received Continue Command")
-                store.dispatch(action)
+                val actionToDispatch = action
+                    ?: try {
+                        actionDeserializer(
+                            Json.decodeFromString<org.mattsho.shoebox.devtools.common.Action>(command.payload ?: "UNKNOWN")
+                        )
+                    } catch (e: Throwable) {
+                        println(e)
+                        throw e
+                    }
+                store.dispatch(actionToDispatch)
                 val dispatch = Snapshot(action, currentState)
                 historyMutex.withLock {
                     history.add(dispatch)
@@ -138,7 +161,7 @@ class DevToolsEnhancer<State: Any, Action: Any>(
                 }
             }
 
-            private suspend fun handlePreviousCommand(action: Action, command: Command) {
+            private suspend fun handlePreviousCommand() {
                 println("Received Previous Command")
                 try {
                     val dispatchOverride = historyMutex.withLock {
@@ -154,7 +177,7 @@ class DevToolsEnhancer<State: Any, Action: Any>(
                 }
             }
 
-            private suspend fun handleReplayCommand(action: Action, command: Command) {
+            private suspend fun handleReplayCommand(command: Command) {
                 println("Received Replay Command")
                 val dispatchId = UUID.fromString(command.payload)
                 val dispatchToReplay = historyMutex.withLock {
@@ -164,20 +187,20 @@ class DevToolsEnhancer<State: Any, Action: Any>(
                 dispatchToReplay?.let {
                     forceStateChange(it.state)
                 }
-                val dispatch = Snapshot(action, currentState)
+                val dispatch = Snapshot<State, Action>(null, currentState)
                 historyMutex.withLock {
                     history.add(dispatch)
                     dispatchMap[dispatchId] = dispatch
                 }
             }
 
-            private suspend fun handleOverrideCommand(action: Action, command: Command, dispatchId: UUID) {
+            private suspend fun handleOverrideCommand(command: Command, dispatchId: UUID = UUID.randomUUID()) {
                 println("Received Override Command")
                 val actionContainer = Json.decodeFromString<org.mattsho.shoebox.devtools.common.Action>(command.payload ?: "")
                 val actionOverride = actionDeserializer(actionContainer)
 
                 store.dispatch(actionOverride)
-                val dispatch = Snapshot(action, currentState)
+                val dispatch = Snapshot(actionOverride, currentState)
                 historyMutex.withLock {
                     history.add(dispatch)
                     dispatchMap[dispatchId] = dispatch
@@ -232,6 +255,10 @@ class DevToolsEnhancer<State: Any, Action: Any>(
                     println("Overriding State --> ${this.toString()} --> $state")
                     this?.update { state }
                 }
+            }
+
+            private fun Action?.requireFor(command: Command): Action {
+                return this ?: throw IllegalArgumentException("The `${command.name}` command requires an `action`, but no action was provided.")
             }
 
         }

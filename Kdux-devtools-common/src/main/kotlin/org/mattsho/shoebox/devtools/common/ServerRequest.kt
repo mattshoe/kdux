@@ -11,6 +11,7 @@ data class ServerRequest(
     @Serializable
     enum class Type {
         REGISTRATION,
+        CURRENT_STATE,
         DISPATCH_REQUEST,
         DISPATCH_RESULT
     }
