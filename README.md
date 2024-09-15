@@ -34,6 +34,7 @@ worrying about exceeding memory limits due to enormous state objects.
 - [**Kdux** and MVI](docs/kdux_mvi.md)
 - [DSL Guide](docs/dsl.md)
 - [Advanced Usage](#advanced-usage)
+    - [DevTools](docs/devtools.md)
     - [Middleware](docs/middleware.md)
     - [Enhancers](docs/enhancer.md)
     - [StoreCreator](docs/store_creator.md)
