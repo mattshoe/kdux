@@ -64,7 +64,7 @@ afterEvaluate {
                     pom {
                         name = "Kdux-devtools"
                         description = """
-                                Kdux-devtools is a toolbox for live Store inspection and debugging.
+                                Kdux-devtools enables live inspection and time-travel debugging for Kdux Stores.
                             """.trimIndent()
                         url = "https://github.com/mattshoe/kdux"
                         properties = mapOf(
