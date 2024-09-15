@@ -43,6 +43,8 @@ open class BatchEnhancer<State: Any, Action: Any>(
             private val batch = mutableListOf<Action>()
             private val batchMutex = Mutex()
 
+            override val name: String
+                get() = store.name
             override val state: Flow<State>
                 get() = store.state
             override val currentState: State

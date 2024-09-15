@@ -59,6 +59,8 @@ open class ThrottleEnhancer<State: Any, Action: Any>(
             private val timeToWait: Duration get() = interval.minus(elapsedTime)
             private val mutex = Mutex()
 
+            override val name: String
+                get() = store.name
             override val state: Flow<State>
                 get() = store.state
             override val currentState: State

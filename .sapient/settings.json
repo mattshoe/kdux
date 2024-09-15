@@ -1,0 +1,18 @@
+{
+  "testDirectory": "/Users/matthewshoemaker/repos/kdux/Kdux/src/test",
+  "testDirectoryOverrideStatus": true,
+  "unitTestLibrary": "JUNIT4",
+  "mockingLibrary": "MOCKITO",
+  "assertionLibrary": "HAMCREST",
+  "setAutoComplete": false,
+  "useLLM": true,
+  "skipVerifyGetterMethod": false,
+  "obfuscateLLMCode": false,
+  "fileNamePattern": "{sourceClassName}SapientGeneratedTest.java",
+  "fileNamePatternOverrideStatus": false,
+  "weightChoice": "LinesOfCode",
+  "weightConfig": {
+    "low": 20,
+    "mid": 50
+  }
+}

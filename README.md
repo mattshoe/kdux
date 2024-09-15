@@ -236,7 +236,7 @@ Add the dependency for **Kdux** to your `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("org.mattshoe.shoebox:Kdux:1.0.9")
+    implementation("org.mattshoe.shoebox:Kdux:1.0.10")
 }
 ```
 
@@ -324,6 +324,7 @@ Here's a simple example of a [Store](docs/store.md) that manages a "Counter" to 
 middleware, enhancers, and various other tools to build complex state management solutions that cater to your
 specific needs.
 
+- [DevTools](docs/devtools.md)
 - [DSL Guide](docs/dsl.md)
 - [Using **Kdux** with MVI](docs/kdux_mvi.md)
 - [Third Party Integration](docs/third_party_support.md)
@@ -336,6 +337,7 @@ specific needs.
 
 ### Tools
 
+- [DevTools](docs/devtools.md)
 - [Persistence](docs/persistence_enhancer.md)
 - [Logging](docs/logging_enhancer.md)
 - [Authorization](docs/guard_enhancer.md)

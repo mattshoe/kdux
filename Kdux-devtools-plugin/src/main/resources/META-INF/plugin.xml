@@ -1,0 +1,44 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+  <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+  <id>org.mattshoe.shoebox.Kdux-devtools-plugin</id>
+
+  <!-- Public plugin name should be written in Title Case.
+       Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+  <name>Kdux Devtools</name>
+
+  <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+  <vendor email="mattshoe81@gmail.com" url="https://mattshoe.org">ShoeBox OSS</vendor>
+
+  <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+       Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+       Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+  <description><![CDATA[
+    <h2>Kdux DevTools</h2>
+    <p><strong>Enhance your debugging experience</strong> with live inspection and Time-Travel debugging for Kdux-powered applications.</p>
+
+    <h3>Key Features:</h3>
+    <ul>
+      <li><strong>Live State Inspection:</strong> Track and inspect changes in application state in real time as actions are dispatched.</li>
+      <li><strong>Time-Travel Debugging:</strong> Rewind to any previous state and replay actions to test and simulate different scenarios.</li>
+      <li><strong>Action Replay:</strong> Instantly replay actions to see how state changes would have occurred in different conditions.</li>
+      <li><strong>Dispatch Snapshot Replay:</strong> Restore the state at the beginning of any dispatch and replay its action for full time-travel simulation.</li>
+      <li><strong>Real-Time Action Editing:</strong> Modify actions live while debugging to experiment with different inputs and behaviors.</li>
+    </ul>
+
+    <p><strong>Seamless Integration:</strong> Kdux DevTools works directly with your Kdux-powered stores for an effortless debugging experience, enhancing your development workflow.</p>
+]]></description>
+
+  <!-- Product and plugin compatibility requirements.
+       Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+  <depends>com.intellij.modules.platform</depends>
+  <depends>org.jetbrains.android</depends>
+
+  <!-- Extension points defined by the plugin.
+       Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+  <extensions defaultExtensionNs="com.intellij">
+    <toolWindow id="Kdux DevTools"
+                anchor="left"
+                factoryClass="org.mattshoe.shoebox.kduxdevtoolsplugin.ui.DevToolsWindowFactory"/>
+  </extensions>
+</idea-plugin>
