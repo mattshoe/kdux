@@ -4,9 +4,6 @@ plugins {
     signing
 }
 
-group = "org.mattshoe.shoebox"
-version = "1.0.9"
-
 dependencies {
     implementation(project(":Kdux"))
     implementation("com.squareup.moshi:moshi-kotlin:1.15.1")

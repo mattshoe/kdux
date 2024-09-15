@@ -7,8 +7,8 @@ plugins {
   id("org.jetbrains.kotlin.jvm")
 }
 
-group = "org.mattshoe.shoebox"
-version = "1.0.9"
+group = project.properties["group.id"].toString()
+val VERSION: String = project.properties["version"].toString()
 
 repositories {
   mavenCentral()

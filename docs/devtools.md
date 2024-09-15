@@ -32,7 +32,7 @@ First, add the Kdux DevTools library to your `build.gradle.kts` dependencies:
 
 ```kotlin
 dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-devtools:1.0.9") // Replace with the correct version
+    implementation("org.mattshoe.shoebox:Kdux-devtools:1.0.10") // Replace with the correct version
 }
 ```
 
