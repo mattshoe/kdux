@@ -7,6 +7,7 @@ import kdux.store
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.junit.Ignore
 import org.junit.Test
 import kotlin.random.Random
 
@@ -15,6 +16,7 @@ data class TestState(val value: Int)
 
 val gson = Gson()
 
+@Ignore("Enable this test for manually testing the Kdux Devtools plugin")
 class DevToolsEnhancerTest {
 
     @Test

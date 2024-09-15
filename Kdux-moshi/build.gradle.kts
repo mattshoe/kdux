@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "org.mattshoe.shoebox"
-version = "1.0.7"
+version = "1.0.9"
 
 dependencies {
     implementation(project(":Kdux"))

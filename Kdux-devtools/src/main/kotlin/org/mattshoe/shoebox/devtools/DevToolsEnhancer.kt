@@ -26,6 +26,33 @@ private data class Snapshot<State: Any, Action: Any>(
     val state: State
 )
 
+/**
+ * The `DevToolsEnhancer` class enhances a Kdux `Store` by integrating it with an external server-based
+ * debugging tool. It enables remote control of the store's state and actions through a WebSocket
+ * connection, allowing users to track, replay, and override state transitions and dispatched actions
+ * in real time.
+ *
+ * ### Features:
+ *
+ * - **Serialization/Deserialization**: The enhancer requires serializer and deserializer functions for
+ *   both actions and state. These functions convert actions and state to and from JSON or other formats.
+ * - **Real-Time Debugging**: The enhancer communicates with a server using WebSockets, enabling live
+ *   inspection of the store's state and actions. Commands sent from the server can trigger specific actions
+ *   such as replaying actions or overriding the current state.
+ * - **History Tracking**: Keeps track of a history of dispatched actions and the resulting states,
+ *   allowing for action replay, time travel, and state restoration.
+ *
+ * @param actionSerializer A suspend function that serializes an `Action` to a `String` for transmission
+ *   over the WebSocket.
+ * @param actionDeserializer A suspend function that deserializes a `String` into an `Action` from data
+ *   received over the WebSocket.
+ * @param stateSerializer A suspend function that serializes the `State` to a `String` for transmission
+ *   over the WebSocket.
+ * @param stateDeserializer A suspend function that deserializes a `String` into a `State` from data
+ *   received over the WebSocket.
+ * @param State The type of state managed by the store.
+ * @param Action The type of actions that can be dispatched to the store.
+ */
 class DevToolsEnhancer<State: Any, Action: Any>(
     private val actionSerializer: suspend (Action) -> String,
     private val actionDeserializer: suspend (org.mattsho.shoebox.devtools.common.Action) -> Action,
