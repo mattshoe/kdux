@@ -10,48 +10,15 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.mattsho.shoebox.devtools.common.*
-import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.UserIntent
+import org.mattsho.shoebox.devtools.common.DispatchRequest
+import org.mattsho.shoebox.devtools.common.DispatchResult
+import org.mattsho.shoebox.devtools.common.ServerRequest
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.*
-import java.util.UUID
+import java.util.*
 
 typealias RequestId = String
 typealias SessionId = String
 typealias StoreName = String
-
-data class RegistrationChange(
-    val value: Registration,
-    val removed: Boolean = false
-)
-
-sealed interface ServerState {
-    data object Started: ServerState
-    data object Stopped: ServerState
-}
-
-sealed interface DebugState {
-    data class ActivelyDebugging(
-        val storeName: String,
-        val currentState: CurrentState? = null,
-        val dispatchRequest: DispatchRequest? = null
-    ): DebugState
-
-    data class DebuggingPaused(
-        val storeName: String,
-        val currentState: CurrentState? = null
-    ): DebugState
-
-    data object NotDebugging: DebugState
-}
-
-sealed interface ServerIntent {
-    data class Command(val command: UserCommand): ServerIntent
-    data class StartDebugging(val storeName: String): ServerIntent
-    data class PauseDebugging(val storeName: String): ServerIntent
-    data object StopDebugging: ServerIntent
-    data object StopServer: ServerIntent
-    data object StartServer: ServerIntent
-}
 
 class DevToolsServerImpl : DevToolsServer {
     private var coroutineScope = buildCoroutineScope()
@@ -77,6 +44,7 @@ class DevToolsServerImpl : DevToolsServer {
             .onEach { command ->
                 try {
                     when (command) {
+                        is UserCommand.Continue,
                         is UserCommand.Pause,
                         is UserCommand.NextDispatch -> {
                             val requestId = requestMap.access {
@@ -142,7 +110,11 @@ class DevToolsServerImpl : DevToolsServer {
                     )
                     userCommandStream.emit(UserCommand.Pause(intent.storeName))
                 }
-                is ServerIntent.StopDebugging -> _debugState.emit(DebugState.NotDebugging)
+                is ServerIntent.StopDebugging -> {
+                    println("_debugState.emit(DebugState.NotDebugging)")
+                    userCommandStream.emit(UserCommand.Continue(intent.storeName))
+                    _debugState.emit(DebugState.NotDebugging)
+                }
             }
         }
     }

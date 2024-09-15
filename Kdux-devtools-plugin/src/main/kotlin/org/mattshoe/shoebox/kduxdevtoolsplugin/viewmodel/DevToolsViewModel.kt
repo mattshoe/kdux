@@ -186,7 +186,8 @@ class DevToolsViewModel(
                     }
                 }
                 is UserIntent.StopDebugging -> {
-                    server.execute(ServerIntent.StopDebugging)
+                    println("server.execute(ServerIntent.StopDebugging)")
+                    server.execute(ServerIntent.StopDebugging(intent.storeName))
                     _uiState.update { UiState.DebuggingStopped }
                 }
                 is UserIntent.PauseDebugging -> {

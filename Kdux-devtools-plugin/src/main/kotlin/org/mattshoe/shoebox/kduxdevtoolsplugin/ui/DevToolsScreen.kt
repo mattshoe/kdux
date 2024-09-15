@@ -32,7 +32,6 @@ import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.DevToolsViewModel
 import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.DispatchLog
 import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.UiState
 import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.UserIntent
-import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.CurrentState
 
 @Composable
 fun DevToolsScreen(
@@ -40,15 +39,21 @@ fun DevToolsScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val dispatchLogs: List<DispatchLog> by viewModel.dispatchLogStream.collectAsState(emptyList())
-    val selectedStore = "TestStore0"
+    var selectedStore: String? by remember {
+        mutableStateOf(null)
+    }
     Column {
         when (state) {
-            is UiState.DebuggingStopped -> StoreNameInput(viewModel) {
-//                selectedStore = it
+            is UiState.DebuggingStopped -> StoreNameInput(viewModel) { store ->
+                selectedStore = store
             }
             is UiState.Debugging, is UiState.DebuggingPaused -> {
                 DebugWindow(selectedStore, viewModel) {
-//                    selectedStore = null
+                    selectedStore?.let {
+                        println("Debug Close/Stop Event!! --> $it")
+                        viewModel.handleIntent(UserIntent.StopDebugging(it))
+                    }
+                    selectedStore = null
                 }
             }
         }
@@ -188,9 +193,6 @@ fun DebugWindow(
 
             }
             CloseIcon {
-                storeName?.let {
-                    viewModel.handleIntent(UserIntent.StopDebugging(storeName))
-                }
                 onClose()
             }
         }
