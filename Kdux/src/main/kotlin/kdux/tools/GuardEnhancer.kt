@@ -20,6 +20,9 @@ open class GuardEnhancer<State: Any, Action: Any>(
 
     override fun enhance(store: Store<State, Action>): Store<State, Action> {
         return object : Store<State, Action> {
+
+            override val name: String
+                get() = store.name
             override val state: Flow<State>
                 get() = store.state
             override val currentState: State

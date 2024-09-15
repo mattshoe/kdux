@@ -18,7 +18,7 @@ Kdux provides full integration with the Android SDK, leveraging LogCat, on-devic
 
 ```kotlin
 dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-android:1.0.9")
+    implementation("org.mattshoe.shoebox:Kdux-android:1.0.10")
 }
 ```
 
@@ -52,7 +52,7 @@ Kdux supports using [Room](https://developer.android.com/training/data-storage/r
 #### Dependency
 ```kotlin
 dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-room:1.0.9")
+    implementation("org.mattshoe.shoebox:Kdux-room:1.0.10")
 }
 ```
 
@@ -79,7 +79,7 @@ Kdux supports using [Realm](https://github.com/realm/realm-java) for its [State 
 #### Dependency
 ```kotlin
 dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-realm:1.0.9")
+    implementation("org.mattshoe.shoebox:Kdux-realm:1.0.10")
 }
 ```
 
@@ -112,7 +112,7 @@ Kdux supports [Kotlinx Serialization](https://github.com/Kotlin/kotlinx.serializ
 #### Dependency
 ```kotlin
 dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-kotlinx-serialization:1.0.9")
+    implementation("org.mattshoe.shoebox:Kdux-kotlinx-serialization:1.0.10")
 }
 ```
 
@@ -138,7 +138,7 @@ Kdux supports [Gson](https://github.com/google/gson) for its [State Persistence]
 #### Dependency
 ```kotlin
 dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-gson:1.0.9")
+    implementation("org.mattshoe.shoebox:Kdux-gson:1.0.10")
 }
 ```
 
@@ -164,7 +164,7 @@ Kdux supports Google's [ProtoBuf](https://github.com/square/moshi) serialization
 #### Dependency
 ```kotlin
 dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-protobuf:1.0.9")
+    implementation("org.mattshoe.shoebox:Kdux-protobuf:1.0.10")
 }
 ```
 
@@ -190,7 +190,7 @@ Kdux supports [Moshi](https://github.com/square/moshi) for its [State Persistenc
 #### Dependency
 ```kotlin
 dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-moshi:1.0.9")
+    implementation("org.mattshoe.shoebox:Kdux-moshi:1.0.10")
 }
 ```
 
@@ -216,7 +216,7 @@ Kdux supports [Jackson](https://github.com/FasterXML/jackson-module-kotlin) seri
 #### Dependency
 ```kotlin
 dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-jackson:1.0.9")
+    implementation("org.mattshoe.shoebox:Kdux-jackson:1.0.10")
 }
 ```
 

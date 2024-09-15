@@ -24,6 +24,9 @@ open class PerformanceEnhancer<State: Any, Action: Any>(
 ): Enhancer<State, Action> {
     override fun enhance(store: Store<State, Action>): Store<State, Action> {
         return object : Store<State, Action> {
+
+            override val name: String
+                get() = store.name
             override val currentState: State
                 get() = store.currentState
             override val state: Flow<State>
