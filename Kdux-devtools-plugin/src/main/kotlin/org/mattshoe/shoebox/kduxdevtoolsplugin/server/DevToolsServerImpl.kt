@@ -24,6 +24,16 @@ data class RegistrationChange(
     val removed: Boolean = false
 )
 
+sealed interface ServerState {
+    data class ActivelyDebugging(val storeName: String)
+    data class DebuggingPaused(val storeName: String)
+    data object NotDebugging
+}
+
+sealed interface ServerIntent {
+    data class Send(val command: Command)
+}
+
 class DevToolsServerImpl : DevToolsServer {
     private var coroutineScope = buildCoroutineScope()
     private val userCommandStream = MutableSharedFlow<UserCommand>()

@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.serialization.ExperimentalSerializationApi
 import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.DevToolsViewModel
 import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.DispatchLog
 import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.State
@@ -44,7 +43,7 @@ fun DevToolsScreen(
             is State.Stopped -> StoreNameInput(viewModel) {
 //                selectedStore = it
             }
-            is State.Debugging, is State.Paused -> {
+            is State.Debugging, is State.DebuggingPaused -> {
                 DebugWindow(selectedStore!!, viewModel) {
 //                    selectedStore = null
                 }
@@ -75,7 +74,8 @@ fun StoreNameInput(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight(Alignment.Bottom)
-            .padding(8.dp),
+            .padding(8.dp)
+            .background(Colors.DarkGray),
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -97,8 +97,9 @@ fun StoreNameInput(
                 }
             }
         )
+        Spacer(Modifier.width(4.dp))
         Disabler(
-            isDisabled = false
+            isDisabled = storeName == null
         ) {
             DebugIcon(
                 modifier = Modifier
@@ -109,17 +110,18 @@ fun StoreNameInput(
                 }
             }
         }
+        Spacer(Modifier.width(8.dp))
     }
 }
 
 @Composable
 fun DebugWindow(
-    storeName: String,
+    storeName: String?,
     viewModel: DevToolsViewModel,
     onClose: () -> Unit
 ) {
-    val isPaused by derivedStateOf {
-        viewModel.state.value is State.Paused
+    val isDebuggingPaused by derivedStateOf {
+        viewModel.state.value is State.DebuggingPaused
     }
     val incomingDispatch by viewModel.debugStream.collectAsState(null)
     val currentState by viewModel.currentStateStream.collectAsState(null)
@@ -131,46 +133,58 @@ fun DebugWindow(
                 .fillMaxWidth()
                 .padding(8.dp),
             horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.Bottom,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(
                 horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.Bottom,
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.weight(1f)
             ) {
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(16.dp))
                 StepBackIcon {
-                    viewModel.handleIntent(UserIntent.StepBack(storeName))
+                    storeName?.let {
+                        viewModel.handleIntent(UserIntent.StepBack(it))
+                    }
                 }
                 Spacer(Modifier.width(8.dp))
-                if (isPaused) {
-                    PlayIcon {
-                        viewModel.handleIntent(UserIntent.StartDebugging(storeName))
+                DividerIcon()
+                Spacer(Modifier.width(8.dp))
+                if (isDebuggingPaused) {
+                    ContinueIcon {
+                        storeName?.let {
+                            viewModel.handleIntent(UserIntent.StartDebugging(storeName))
+                        }
                     }
                 } else {
-                    PauseIcon {
-                        viewModel.handleIntent(UserIntent.PauseDebugging(storeName))
+                    DebugIcon {
+                        storeName?.let {
+                            viewModel.handleIntent(UserIntent.PauseDebugging(storeName))
+                        }
                     }
                 }
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(16.dp))
                 Disabler(
                     isDisabled = incomingDispatch == null
                 ) {
                     StepOverIcon {
-                        viewModel.handleIntent(UserIntent.StepOver(storeName))
+                        storeName?.let {
+                            viewModel.handleIntent(UserIntent.StepOver(storeName))
+                        }
                     }
                 }
 
             }
             CloseIcon {
-                viewModel.handleIntent(UserIntent.StopDebugging(storeName))
+                storeName?.let {
+                    viewModel.handleIntent(UserIntent.StopDebugging(storeName))
+                }
                 onClose()
             }
         }
 
         SectionTitle(
             modifier = Modifier.padding(end = 4.dp),
-            title = storeName
+            title = storeName ?: "UNKNOWN"
         )
 
         Row {

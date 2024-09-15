@@ -32,7 +32,7 @@ interface ViewModel<State: Any, UserIntent: Any> {
 sealed interface State {
     data object Stopped: State
     data class Debugging(val storeName: String): State
-    data class Paused(val storeName: String): State
+    data class DebuggingPaused(val storeName: String): State
 }
 
 sealed interface UserIntent {
@@ -175,7 +175,7 @@ class DevToolsViewModel(
                 is UserIntent.PauseDebugging -> {
                     server.send(UserCommand.Pause(intent.storeName))
                     _state.update {
-                        State.Paused(intent.storeName)
+                        State.DebuggingPaused(intent.storeName)
                     }
                 }
                 is UserIntent.StepOver -> {

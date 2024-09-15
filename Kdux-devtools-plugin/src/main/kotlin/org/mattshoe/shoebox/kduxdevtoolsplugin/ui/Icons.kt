@@ -3,6 +3,7 @@ package org.mattshoe.shoebox.kduxdevtoolsplugin.ui
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.onClick
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -193,6 +194,35 @@ fun StepBackIcon(
     )
 }
 
+@Composable
+fun ContinueIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = Colors.LightGray,
+    onClick: () -> Unit = { }
+) {
+    Icon(
+        modifier,
+        resource = "/continue_icon.svg",
+        description = "Continue execution. Executes dispatches without breaking.",
+        tint = tint,
+        onClick = onClick
+    )
+}
+
+@Composable
+fun DividerIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = Colors.LightGray
+) {
+    Icon(
+        modifier,
+        resource = "/divider.svg",
+        description = "Continue execution. Executes dispatches without breaking.",
+        tint = tint,
+        onClick = { }
+    )
+}
+
 
 @Composable
 fun Icon(
@@ -200,13 +230,17 @@ fun Icon(
     resource: String,
     description: String,
     tint: Color,
-    onClick: () -> Unit
+    onClick: (() -> Unit)? = null
 ) {
     Image(
         modifier = Modifier
             .clip(RoundedCornerShape(6.dp))
-            .clickable {
-                onClick()
+            .apply {
+                onClick?.let {
+                    clickable {
+                        it()
+                    }
+                }
             }
             .then(modifier),
         painter = painterResource(resource),
