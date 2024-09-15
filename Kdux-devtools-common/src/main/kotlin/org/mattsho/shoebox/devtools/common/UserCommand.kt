@@ -3,6 +3,7 @@ package org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.mattsho.shoebox.devtools.common.Action
+import org.mattsho.shoebox.devtools.common.DispatchResult
 
 sealed interface UserCommand {
     val storeName: String
@@ -31,12 +32,32 @@ sealed interface UserCommand {
         override val payload = Command("previous")
     }
 
+    data class RestoreState(
+        val dispatch: DispatchResult,
+        override val storeName: String = dispatch.storeName,
+        override val payload: Command = Command(
+            "restoreState",
+            payload = Json.encodeToString(dispatch)
+        )
+    ): UserCommand
+
+    data class ReplayAction(
+        val dispatch: DispatchResult,
+        override val storeName: String = dispatch.storeName,
+        override val payload: Command = Command(
+            "replayAction",
+            payload = Json.encodeToString(dispatch)
+        )
+    ): UserCommand
+
     data class ReplayDispatch(
-        override val storeName: String,
-        private val dispatchId: String
-    ): UserCommand {
-        override val payload = Command("replay", dispatchId)
-    }
+        val dispatch: DispatchResult,
+        override val storeName: String = dispatch.storeName,
+        override val payload: Command = Command(
+            "replayDispatch",
+            payload = Json.encodeToString(dispatch)
+        )
+    ): UserCommand
 
     data class DispatchOverride(
         override val storeName: String,

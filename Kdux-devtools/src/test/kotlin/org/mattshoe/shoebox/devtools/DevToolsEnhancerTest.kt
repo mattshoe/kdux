@@ -1,12 +1,14 @@
 package org.mattshoe.shoebox.devtools
 
 import com.google.gson.Gson
+import kdux.middleware
 import kdux.reducer
 import kdux.store
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
+import kotlin.random.Random
 
 data class TestAction(val value: Int)
 data class TestState(val value: Int)
@@ -23,7 +25,9 @@ class DevToolsEnhancerTest {
                 val store = store<TestState, TestAction>(
                     initialState = TestState(0),
                     reducer = reducer { state, action ->
-                        TestState(action.value + state.value)
+                        TestState(state.value + action.value).also {
+                            println("New Test State --> $it")
+                        }
                     }
                 ) {
                     name("TestStore$storeNumber")
@@ -41,17 +45,29 @@ class DevToolsEnhancerTest {
                             gson.fromJson(it.json, TestState::class.java)
                         }
                     )
+
+//                    add(
+//                        middleware { store, action, next ->
+//                            if (store.currentState.value < 3){
+//                                store.dispatch(TestAction(10))
+//                            }
+//                        }
+//                    )
                 }
 
                 repeat (20) {
-                    delay(100)
-                    store.dispatch(TestAction(1))
+                    delay(1000)
+                    store.dispatch(
+                        TestAction(
+                            Random.nextInt(10)
+                        )
+                    )
                 }
             }
         }
 
         while (true) {
-            delay(100)
+            delay(1000)
         }
     }
 }

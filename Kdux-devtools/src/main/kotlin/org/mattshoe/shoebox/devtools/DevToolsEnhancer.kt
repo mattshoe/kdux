@@ -4,10 +4,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.mattsho.shoebox.devtools.common.Action
 import org.mattsho.shoebox.devtools.common.ServerRequest
 import org.mattsho.shoebox.devtools.common.DispatchRequest
 import org.mattsho.shoebox.devtools.common.DispatchResult
@@ -42,6 +40,8 @@ class DevToolsEnhancer<State: Any, Action: Any>(
             private val history = mutableListOf<Snapshot<State, Action>>()
             private val dispatchMap = mutableMapOf<UUID, Snapshot<State, Action>>()
             private val socket = ServerClient.startSession(name)
+            private var transactionLock: CompletableDeferred<Unit>? = null
+            private var bypassServerRequest: Action? = null
 
             init {
                 socket.adHocCommands
@@ -88,10 +88,11 @@ class DevToolsEnhancer<State: Any, Action: Any>(
             override suspend fun dispatch(action: Action) = coroutineScope {
                 val dispatchId = UUID.randomUUID()
                 println("starting dispatch -- currentState --> $currentState")
-                val request: DispatchRequest
-                dispatchMutex.withLock {
-                    request = buildDispatchRequest(action, dispatchId)
-                    println("sending request --> $request")
+                val request = buildDispatchRequest(action, dispatchId)
+                println("sending request --> $request")
+                if (bypassServerRequest === action) {
+                    handleContinueCommand(action, null, dispatchId)
+                } else {
                     val response = socket.awaitResponse(
                         ServerRequest(
                             responseCorrelationId = dispatchId.toString(),
@@ -102,6 +103,7 @@ class DevToolsEnhancer<State: Any, Action: Any>(
                     println("response received --> $response")
                     handleServerCommand(action, response, dispatchId)
                 }
+
                 socket.send(
                     buildDispatchResult(
                         action,
@@ -119,15 +121,18 @@ class DevToolsEnhancer<State: Any, Action: Any>(
                     "previous" -> handlePreviousCommand()
                     "replay" -> handleReplayCommand(command)
                     "override" -> handleOverrideCommand(command, dispatchId)
+                    "restoreState" -> handleRestoreState(command)
+                    "replayAction" -> handleReplayAction(command)
+                    "replayDispatch" -> handleReplayDispatch(command)
                 }
             }
 
-            private suspend fun handleContinueCommand(action: Action?, command: Command, dispatchId: UUID) {
+            private suspend fun handleContinueCommand(action: Action?, command: Command?, dispatchId: UUID) {
                 println("Received Continue Command")
                 val actionToDispatch = action
                     ?: try {
                         actionDeserializer(
-                            Json.decodeFromString<org.mattsho.shoebox.devtools.common.Action>(command.payload ?: "UNKNOWN")
+                            Json.decodeFromString<org.mattsho.shoebox.devtools.common.Action>(command?.payload ?: "UNKNOWN")
                         )
                     } catch (e: Throwable) {
                         println(e)
@@ -201,6 +206,44 @@ class DevToolsEnhancer<State: Any, Action: Any>(
                 historyMutex.withLock {
                     history.add(dispatch)
                     dispatchMap[dispatchId] = dispatch
+                }
+            }
+
+            private suspend fun handleRestoreState(command: Command) {
+                println("Received Restore State Command")
+                val dispatch = Json.decodeFromString<DispatchResult>(command.payload ?: "")
+                forceStateChange(
+                    stateDeserializer(dispatch.newState)
+                )
+            }
+
+            private suspend fun handleReplayAction(command: Command) {
+                println("Received Replay Action Command")
+                val payload = Json.decodeFromString<DispatchResult>(command.payload ?: "")
+                val action = actionDeserializer(payload.action)
+                bypassServerRequest = action
+                println("Dispatching replay --> $action")
+                this.dispatch(action)
+            }
+
+            private suspend fun handleReplayDispatch(command: Command) {
+                println("Received Replay Dispatch Command")
+                val dispatch = Json.decodeFromString<DispatchResult>(command.payload ?: "")
+                transactionLock = CompletableDeferred()
+                try {
+                    val stateReset = stateDeserializer(dispatch.previousState)
+                    println("Resetting State --> $stateReset")
+                    forceStateChange(stateReset)
+                    println("Waiting a short time for processing to happen")
+                    delay(100)
+                    val action = actionDeserializer(dispatch.action)
+                    bypassServerRequest = action
+                    println("Dispatching Action Replay --> $action")
+                    dispatch(action)
+                } catch (e: Throwable) {
+                    println("Error while executing ReplayDispatch --> $e")
+                } finally {
+                    transactionLock?.complete(Unit)
                 }
             }
 

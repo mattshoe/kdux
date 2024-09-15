@@ -60,7 +60,8 @@ fun DevToolsScreen(
         }
         DispatchLogList(
             selectedStore,
-            dispatchLogs
+            dispatchLogs,
+            viewModel
         ) {
             viewModel.handleIntent(UserIntent.ClearLogs)
         }
@@ -280,6 +281,7 @@ fun DebugWindow(
 fun DispatchLogList(
     selectedStore: String?,
     dispatchLog: List<DispatchLog>,
+    viewModel: DevToolsViewModel,
     onClear: () -> Unit
 ) {
     // Store the expanded states of the items in a mutable state map
@@ -309,14 +311,18 @@ fun DispatchLogList(
             .fillMaxHeight()
     ) {
         items(filteredLogs) { log ->
-            DispatchLogRow(log, expandedStates)
+            DispatchLogRow(log, expandedStates, viewModel)
         }
     }
 }
 
 
 @Composable
-fun DispatchLogRow(log: DispatchLog, expandedState: MutableMap<String, Boolean>) {
+fun DispatchLogRow(
+    log: DispatchLog,
+    expandedState: MutableMap<String, Boolean>,
+    viewModel: DevToolsViewModel
+) {
     val isExpanded = expandedState[log.result.dispatchId] ?: false
     Column(modifier = Modifier.fillMaxWidth()) {
         // Header Row with caret
@@ -347,34 +353,34 @@ fun DispatchLogRow(log: DispatchLog, expandedState: MutableMap<String, Boolean>)
                     Button(
                         text = "Restore State",
                         icon = {
-                            SendIcon {
-                                // TODO
-                            }
+                            SendIcon {}
                         }
                     ) {
-                        // TODO
+                        viewModel.handleIntent(
+                            UserIntent.RestoreState(log.result)
+                        )
                     }
                     Spacer(Modifier.width(12.dp))
                     Button(
                         text = "Replay Action",
                         icon = {
-                            SendIcon {
-                                // TODO
-                            }
+                            SendIcon {}
                         }
                     ) {
-
+                        viewModel.handleIntent(
+                            UserIntent.ReplayAction(log.result)
+                        )
                     }
                     Spacer(Modifier.width(12.dp))
                     Button(
                         text = "Replay Dispatch",
                         icon = {
-                            SendIcon {
-                                // TODO
-                            }
+                            SendIcon {}
                         }
                     ) {
-
+                        viewModel.handleIntent(
+                            UserIntent.ReplayDispatch(log.result)
+                        )
                     }
                 }
                 Spacer(Modifier.height(4.dp))

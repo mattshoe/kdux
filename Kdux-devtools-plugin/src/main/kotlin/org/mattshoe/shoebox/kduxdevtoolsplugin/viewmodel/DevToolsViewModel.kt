@@ -154,7 +154,6 @@ class DevToolsViewModel(
 
     override fun handleIntent(intent: UserIntent) {
         coroutineScope.launch {
-            println("Handling Intent --> $intent")
             when (intent) {
                 is UserIntent.StartDebugging -> {
                     server.execute(ServerIntent.StartDebugging(intent.storeName))
@@ -194,10 +193,24 @@ class DevToolsViewModel(
                         )
                     )
                 }
+                is UserIntent.RestoreState -> {
+                    server.execute(
+                        ServerIntent.Command(
+                            UserCommand.RestoreState(intent.dispatch)
+                        )
+                    )
+                }
+                is UserIntent.ReplayAction -> {
+                    server.execute(
+                        ServerIntent.Command(
+                            UserCommand.ReplayAction(intent.dispatch)
+                        )
+                    )
+                }
                 is UserIntent.ReplayDispatch -> {
                     server.execute(
                         ServerIntent.Command(
-                            UserCommand.PreviousDispatch(intent.storeName)
+                            UserCommand.ReplayDispatch(intent.dispatch)
                         )
                     )
                 }
