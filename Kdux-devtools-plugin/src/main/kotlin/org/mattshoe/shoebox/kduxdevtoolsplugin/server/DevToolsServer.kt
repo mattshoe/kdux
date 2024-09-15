@@ -1,19 +1,13 @@
 package org.mattshoe.shoebox.kduxdevtoolsplugin.server
 
 import kotlinx.coroutines.flow.Flow
-import org.mattsho.shoebox.devtools.common.DispatchRequest
 import org.mattsho.shoebox.devtools.common.DispatchResult
-import org.mattsho.shoebox.devtools.common.State
-import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.UserCommand
 
 interface DevToolsServer {
-    val dispatchRequestStream: Flow<DispatchRequest>
+    val serverState: Flow<ServerState>
     val dispatchResultStream: Flow<DispatchResult>
     val registrationStream: Flow<RegistrationChange>
-    val currentStateStream: Flow<State>
-    fun send(userCommand: UserCommand)
-    fun storeUnderDebug(storeName: String?)
-    fun start()
-    fun stop()
+    val debugState: Flow<DebugState>
+    fun execute(intent: ServerIntent)
 }
 

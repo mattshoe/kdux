@@ -1,10 +1,7 @@
 package org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -13,6 +10,7 @@ import kotlinx.serialization.json.JsonObject
 import org.mattsho.shoebox.devtools.common.DispatchRequest
 import org.mattsho.shoebox.devtools.common.DispatchResult
 import org.mattshoe.shoebox.kduxdevtoolsplugin.server.*
+import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.CurrentState
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.UserCommand
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Registration
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.TimeStamper
@@ -27,12 +25,20 @@ data class DispatchLog(
 interface ViewModel<State: Any, UserIntent: Any> {
     val state: Flow<State>
     fun handleIntent(intent: UserIntent)
+    fun dispose()
 }
 
-sealed interface State {
-    data object Stopped: State
-    data class Debugging(val storeName: String): State
-    data class DebuggingPaused(val storeName: String): State
+sealed interface UiState {
+    data object DebuggingStopped: UiState
+    data class Debugging(
+        val storeName: String,
+        val currentState: CurrentState? = null,
+        val dispatchRequest: DispatchRequest? = null
+    ): UiState
+    data class DebuggingPaused(
+        val storeName: String,
+        val currentState: CurrentState? = null
+    ): UiState
 }
 
 sealed interface UserIntent {
@@ -48,17 +54,15 @@ sealed interface UserIntent {
 @OptIn(ExperimentalSerializationApi::class)
 class DevToolsViewModel(
     private val server: DevToolsServer = DevToolsServerImpl()
-): ViewModel<State, UserIntent> {
+): ViewModel<UiState, UserIntent> {
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    private val _state = MutableStateFlow<State>(State.Stopped)
+    private val _uiState = MutableStateFlow<UiState>(UiState.DebuggingStopped)
     private val _dispatchStream = MutableStateFlow<List<DispatchLog>>(emptyList())
     private val dispatchLog = mutableListOf<DispatchLog>()
     private val dispatchLogMutex = Mutex()
     private val _registeredStores = mutableListOf<Registration>()
     private val _registrationStream = MutableStateFlow(emptyList<Registration>())
-    private val _currentStateStream = MutableSharedFlow<org.mattsho.shoebox.devtools.common.State>()
-    private val _debugStream = MutableSharedFlow<DispatchRequest?>()
     private val registrationMutex = Mutex()
     private val prettyJson = Json {
         prettyPrint = true
@@ -66,25 +70,39 @@ class DevToolsViewModel(
     }
 
 
-    override val state = _state.asStateFlow()
-    val dispatchStream: Flow<List<DispatchLog>> = _dispatchStream.asSharedFlow()
+    override val state = _uiState.asStateFlow()
     val registrationStream: Flow<List<Registration>> = _registrationStream.asStateFlow()
-    val debugStream: Flow<DispatchRequest?> = _debugStream.asSharedFlow()
-    val currentStateStream: Flow<org.mattsho.shoebox.devtools.common.State?> = _currentStateStream.asSharedFlow()
+    val dispatchLogStream = _dispatchStream.asStateFlow()
 
     init {
-        server.dispatchRequestStream
-            .onEach {
-                _debugStream.emit(
-                    it.copy(
-                        currentState = it.currentState.copy(
-                            json = prettyPrintJson(it.currentState.json)
-                        ),
-                        action = it.action.copy(
-                            json = prettyPrintJson(it.action.json)
+        server.debugState
+            .onEach { serverDebugState ->
+                println("VM received ServerDebugState --> $serverDebugState")
+                when (serverDebugState) {
+                    is DebugState.ActivelyDebugging -> _uiState.emit(
+                        UiState.Debugging(
+                            serverDebugState.storeName,
+                            serverDebugState.currentState,
+                            serverDebugState.dispatchRequest?.copy(
+                                currentState = serverDebugState.dispatchRequest.currentState.copy(
+                                    json = prettyPrintJson(serverDebugState.dispatchRequest.currentState.json)
+                                ),
+                                action = serverDebugState.dispatchRequest.action.copy(
+                                    json = prettyPrintJson(serverDebugState.dispatchRequest.action.json)
+                                )
+                            )
                         )
                     )
-                )
+                    is DebugState.DebuggingPaused -> _uiState.emit(
+                        UiState.DebuggingPaused(
+                            serverDebugState.storeName,
+                            serverDebugState.currentState
+                        )
+                    )
+                    is DebugState.NotDebugging -> _uiState.emit(
+                        UiState.DebuggingStopped
+                    )
+                }
             }.launchIn(coroutineScope)
 
         state.onEach {
@@ -142,61 +160,72 @@ class DevToolsViewModel(
                     }
                 }
             }.launchIn(coroutineScope)
-
-        server.currentStateStream
-            .onEach {
-                _currentStateStream.emit(it)
-            }.launchIn(coroutineScope)
     }
 
     override fun handleIntent(intent: UserIntent) {
         coroutineScope.launch {
             println("Handling Intent --> $intent")
-            _debugStream.emit(null)
             when (intent) {
                 is UserIntent.StartDebugging -> {
-                    server.storeUnderDebug(intent.storeName)
-                    _state.update {
-                        State.Debugging(intent.storeName)
+                    server.execute(ServerIntent.StartDebugging(intent.storeName))
+                    _uiState.update {
+                        UiState.Debugging(intent.storeName)
                     }
                 }
                 is UserIntent.StopDebugging -> {
-                    try {
-                        server.send(
-                            UserCommand.Continue(intent.storeName)
-                        )
-                        server.storeUnderDebug(null)
-                    } catch (e: Throwable) {
-                        println(e)
-                    } finally {
-                        _state.update { State.Stopped }
-                    }
+                    server.execute(ServerIntent.StopDebugging)
+                    _uiState.update { UiState.DebuggingStopped }
                 }
                 is UserIntent.PauseDebugging -> {
-                    server.send(UserCommand.Pause(intent.storeName))
-                    _state.update {
-                        State.DebuggingPaused(intent.storeName)
+                    server.execute(ServerIntent.PauseDebugging(intent.storeName))
+                    _uiState.update {
+                        UiState.DebuggingPaused(intent.storeName)
                     }
                 }
                 is UserIntent.StepOver -> {
-                    server.send(UserCommand.NextDispatch(intent.storeName))
+                    server.execute(
+                        ServerIntent.Command(
+                            UserCommand.Continue(intent.storeName)
+                        )
+                    )
+                    with (_uiState.value as? UiState.Debugging) {
+                        this?.let {
+                            _uiState.update {
+                                copy(dispatchRequest = null)
+                            }
+                        }
+                    }
                 }
                 is UserIntent.StepBack -> {
-                    server.send(UserCommand.PreviousDispatch(intent.storeName))
+                    server.execute(
+                        ServerIntent.Command(
+                            UserCommand.PreviousDispatch(intent.storeName)
+                        )
+                    )
                 }
                 is UserIntent.ReplayDispatch -> {
-                    server.send(UserCommand.ReplayDispatch(intent.storeName, intent.dispatchId))
+                    server.execute(
+                        ServerIntent.Command(
+                            UserCommand.PreviousDispatch(intent.storeName)
+                        )
+                    )
                 }
                 is UserIntent.DispatchOverride -> {
-                    server.send(
-                        UserCommand.DispatchOverride(intent.storeName, Json.decodeFromString(intent.text))
+                    server.execute(
+                        ServerIntent.Command(
+                            UserCommand.DispatchOverride(intent.storeName, Json.decodeFromString(intent.text))
+                        )
                     )
                 }
             }
         }
     }
 
-    fun prettyPrintJson(jsonText: String): String {
+    override fun dispose() {
+        coroutineScope.cancel()
+    }
+
+    private fun prettyPrintJson(jsonText: String): String {
         val jsonObject = prettyJson.parseToJsonElement(jsonText) as JsonObject
         return prettyJson.encodeToString(JsonObject.serializer(), jsonObject)
     }

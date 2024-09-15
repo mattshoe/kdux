@@ -230,17 +230,13 @@ fun Icon(
     resource: String,
     description: String,
     tint: Color,
-    onClick: (() -> Unit)? = null
+    onClick: () -> Unit
 ) {
     Image(
         modifier = Modifier
             .clip(RoundedCornerShape(6.dp))
-            .apply {
-                onClick?.let {
-                    clickable {
-                        it()
-                    }
-                }
+            .clickable {
+                onClick()
             }
             .then(modifier),
         painter = painterResource(resource),

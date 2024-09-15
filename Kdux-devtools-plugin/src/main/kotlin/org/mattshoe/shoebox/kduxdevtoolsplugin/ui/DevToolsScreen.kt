@@ -26,25 +26,28 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.flow.map
+import org.mattsho.shoebox.devtools.common.DispatchRequest
 import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.DevToolsViewModel
 import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.DispatchLog
-import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.State
+import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.UiState
 import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.UserIntent
+import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.CurrentState
 
 @Composable
 fun DevToolsScreen(
     viewModel: DevToolsViewModel
 ) {
     val state by viewModel.state.collectAsState()
-    val dispatchLogs: List<DispatchLog> by viewModel.dispatchStream.collectAsState(emptyList())
-    var selectedStore = "TestStore0"
+    val dispatchLogs: List<DispatchLog> by viewModel.dispatchLogStream.collectAsState(emptyList())
+    val selectedStore = "TestStore0"
     Column {
         when (state) {
-            is State.Stopped -> StoreNameInput(viewModel) {
+            is UiState.DebuggingStopped -> StoreNameInput(viewModel) {
 //                selectedStore = it
             }
-            is State.Debugging, is State.DebuggingPaused -> {
-                DebugWindow(selectedStore!!, viewModel) {
+            is UiState.Debugging, is UiState.DebuggingPaused -> {
+                DebugWindow(selectedStore, viewModel) {
 //                    selectedStore = null
                 }
             }
@@ -67,7 +70,6 @@ fun StoreNameInput(
     }
     val options by viewModel.registrationStream.collectAsState(emptyList())
     var selectedStore: String? by remember { mutableStateOf(null) }
-    var debugEnabled: Boolean by remember { mutableStateOf(false) }
     val placeholder = "Select a store to debug"
 
     Row(
@@ -87,11 +89,9 @@ fun StoreNameInput(
             onOptionSelected = {
                 selectedStore = it
                 if (it != placeholder) {
-                    debugEnabled = true
                     storeName = it
                     onStoreSelected(it)
                 } else {
-                    debugEnabled = false
                     storeName = null
                     onStoreSelected(null)
                 }
@@ -105,6 +105,7 @@ fun StoreNameInput(
                 modifier = Modifier
                     .size(32.dp)
             ) {
+                println("Debug clicked for $storeName")
                 storeName?.let {
                     viewModel.handleIntent(UserIntent.StartDebugging(it))
                 }
@@ -121,10 +122,22 @@ fun DebugWindow(
     onClose: () -> Unit
 ) {
     val isDebuggingPaused by derivedStateOf {
-        viewModel.state.value is State.DebuggingPaused
+        viewModel.state.value is UiState.DebuggingPaused
     }
-    val incomingDispatch by viewModel.debugStream.collectAsState(null)
-    val currentState by viewModel.currentStateStream.collectAsState(null)
+    val incomingDispatch: DispatchRequest? by viewModel.state.map {
+        println("New UiState for DebugWindow --> $it")
+        when (it) {
+            is UiState.Debugging -> it.dispatchRequest
+            else -> null
+        }
+    }.collectAsState(null)
+    val currentState by viewModel.state.map {
+        when (it) {
+            is UiState.Debugging -> it.currentState?.state
+            is UiState.DebuggingPaused -> it.currentState?.state
+            else -> null
+        }
+    }.collectAsState(null)
     val isDisabled by derivedStateOf { incomingDispatch == null }
 
     Column {

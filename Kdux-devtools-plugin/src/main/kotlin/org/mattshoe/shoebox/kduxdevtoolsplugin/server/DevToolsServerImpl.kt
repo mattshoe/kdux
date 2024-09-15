@@ -13,7 +13,6 @@ import kotlinx.serialization.json.Json
 import org.mattsho.shoebox.devtools.common.*
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.*
 import java.util.UUID
-import java.util.concurrent.atomic.AtomicBoolean
 
 typealias RequestId = String
 typealias SessionId = String
@@ -25,34 +24,51 @@ data class RegistrationChange(
 )
 
 sealed interface ServerState {
-    data class ActivelyDebugging(val storeName: String)
-    data class DebuggingPaused(val storeName: String)
-    data object NotDebugging
+    data object Started: ServerState
+    data object Stopped: ServerState
+}
+
+sealed interface DebugState {
+    data class ActivelyDebugging(
+        val storeName: String,
+        val currentState: CurrentState? = null,
+        val dispatchRequest: DispatchRequest? = null
+    ): DebugState
+
+    data class DebuggingPaused(
+        val storeName: String,
+        val currentState: CurrentState? = null
+    ): DebugState
+
+    data object NotDebugging: DebugState
 }
 
 sealed interface ServerIntent {
-    data class Send(val command: Command)
+    data class Command(val command: UserCommand): ServerIntent
+    data class StartDebugging(val storeName: String): ServerIntent
+    data class PauseDebugging(val storeName: String): ServerIntent
+    data object StopDebugging: ServerIntent
+    data object StopServer: ServerIntent
+    data object StartServer: ServerIntent
 }
 
 class DevToolsServerImpl : DevToolsServer {
     private var coroutineScope = buildCoroutineScope()
     private val userCommandStream = MutableSharedFlow<UserCommand>()
     private val _registrationStream = MutableSharedFlow<RegistrationChange>()
-    private val _dispatchRequestStream = MutableSharedFlow<DispatchRequest>()
     private val _dispatchResultStream = MutableSharedFlow<DispatchResult>()
-    private val isStarted = AtomicBoolean(false)
     private val server: ApplicationEngine = buildServer()
     private val storeMap = Synchronized(mutableMapOf<StoreName, WebSocketSession>())
     private val sessionMap = Synchronized(mutableMapOf<SessionId, Registration>())
     private val requestMap = Synchronized(mutableMapOf<StoreName, RequestId>())
-    private var storeUnderDebug: String? = null
-    private val _currentState = MutableSharedFlow<State>()
+    private val _debugState = MutableStateFlow<DebugState>(DebugState.NotDebugging)
+    private val _serverState = MutableStateFlow<ServerState>(ServerState.Stopped)
+    private val _currentStateMap = Synchronized(mutableMapOf<StoreName, CurrentState>())
 
-    override val dispatchRequestStream = _dispatchRequestStream.asSharedFlow()
     override val dispatchResultStream = _dispatchResultStream.asSharedFlow()
     override val registrationStream = _registrationStream.asSharedFlow()
-    override val currentStateStream = _currentState.asSharedFlow()
-
+    override val serverState = _serverState.asStateFlow()
+    override val debugState = _debugState.asStateFlow()
 
     init {
         start()
@@ -88,27 +104,40 @@ class DevToolsServerImpl : DevToolsServer {
             .launchIn(coroutineScope)
     }
 
-    override fun send(userCommand: UserCommand) {
+    override fun execute(intent: ServerIntent) {
         coroutineScope.launch {
-            userCommandStream.emit(userCommand)
+            when (intent) {
+                is ServerIntent.StartServer -> start()
+                is ServerIntent.StopServer -> stop()
+                is ServerIntent.Command -> userCommandStream.emit(intent.command)
+                is ServerIntent.StartDebugging -> _debugState.emit(
+                    DebugState.ActivelyDebugging(
+                        intent.storeName,
+                        _currentStateMap.access { it[intent.storeName] }
+                    )
+                )
+                is ServerIntent.PauseDebugging -> _debugState.emit(
+                    DebugState.DebuggingPaused(
+                        intent.storeName,
+                        _currentStateMap.access { it[intent.storeName] }
+                    )
+                )
+                is ServerIntent.StopDebugging -> _debugState.emit(DebugState.NotDebugging)
+            }
         }
     }
 
-    override fun storeUnderDebug(storeName: String?) {
-        storeUnderDebug = storeName
-    }
-
-    override fun start() {
-        if (!isStarted.getAndSet(true)) {
+    private fun start() {
+        if (_serverState.value != ServerState.Started) {
             server.start()
         }
     }
 
-    override fun stop() {
+    private fun stop() {
         coroutineScope.cancel()
         server.stop()
         coroutineScope = buildCoroutineScope()
-        isStarted.set(false)
+        _serverState.update { ServerState.Stopped }
     }
 
     private fun buildServer(): ApplicationEngine {
@@ -127,7 +156,7 @@ class DevToolsServerImpl : DevToolsServer {
                             when (frame) {
                                 is Frame.Text -> handleTextFrame(frame, sessionId)
                                 is Frame.Close -> handleFrameClose(frame, sessionId)
-                                else -> Unit
+                                else -> throw UnsupportedOperationException("DevTools Debug Server only supports Text Frames.")
                             }
                         }
                     } catch (ex: Throwable) {
@@ -184,17 +213,41 @@ class DevToolsServerImpl : DevToolsServer {
 
     private suspend fun WebSocketSession.dispatchRequest(serverRequest: ServerRequest, sessionId: UUID) {
         val dispatchRequest = Json.decodeFromString<DispatchRequest>(serverRequest.data)
-        if (storeUnderDebug != null && storeUnderDebug == dispatchRequest.storeName) {
-            requestMap.update {
-                it[dispatchRequest.storeName] = dispatchRequest.dispatchId
+        val currentDebugState = _debugState.value
+        when (currentDebugState) {
+            is DebugState.NotDebugging,
+            is DebugState.DebuggingPaused -> {
+                println("Not debugging, ignoring dispatch request")
+                sendMessage(
+                    id = dispatchRequest.dispatchId,
+                    text = Json.encodeToString(Command("continue"))
+                )
             }
-            _dispatchRequestStream.emit(dispatchRequest)
-        } else {
-            sendMessage(
-                id = dispatchRequest.dispatchId,
-                text = Json.encodeToString(Command("continue"))
-            )
+
+            is DebugState.ActivelyDebugging -> {
+                val storeUnderDebug = currentDebugState.storeName
+                if (storeUnderDebug == dispatchRequest.storeName) {
+                    requestMap.update {
+                        it[dispatchRequest.storeName] = dispatchRequest.dispatchId
+                    }
+                    println("Emitting new dispatch Request!")
+                    _debugState.emit(
+                        DebugState.ActivelyDebugging(
+                            storeName = dispatchRequest.storeName,
+                            currentState = _currentStateMap.access { it[dispatchRequest.storeName] },
+                            dispatchRequest = dispatchRequest
+                        )
+                    )
+                } else {
+                    println("Wrong store, ignoring dispatch request")
+                    sendMessage(
+                        id = dispatchRequest.dispatchId,
+                        text = Json.encodeToString(Command("continue"))
+                    )
+                }
+            }
         }
+
     }
 
     private suspend fun WebSocketSession.dispatchResult(serverRequest: ServerRequest, sessionId: UUID) {
@@ -213,8 +266,14 @@ class DevToolsServerImpl : DevToolsServer {
 
     private suspend fun currentState(serverRequest: ServerRequest, sessionId: UUID) {
         val currentState = Json.decodeFromString<CurrentState>(serverRequest.data)
-        if (currentState.storeName == storeUnderDebug) {
-            _currentState.emit(currentState.state)
+        _currentStateMap.access {
+            it[currentState.storeName] = currentState
+        }
+        val currentDebugState = _debugState.value
+        if (currentDebugState is DebugState.ActivelyDebugging) {
+            _debugState.update {
+                currentDebugState.copy(currentState = currentState)
+            }
         }
     }
 
