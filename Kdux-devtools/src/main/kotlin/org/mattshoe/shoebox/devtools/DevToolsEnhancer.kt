@@ -49,12 +49,14 @@ class DevToolsEnhancer<State: Any, Action: Any>(
                         try {
                             handleServerCommand(null, message, UUID.randomUUID())
                         } catch (e: Throwable) {
+                            println("Error processing Server Message --> $message")
                             println(e)
                         }
                     }.launchIn(coroutineScope)
 
                 state
                     .onEach { newState ->
+                        println("Sending New Store State -> $newState")
                         socket.send(
                             ServerRequest(
                                 null,
@@ -86,7 +88,6 @@ class DevToolsEnhancer<State: Any, Action: Any>(
             override suspend fun dispatch(action: Action) = coroutineScope {
                 val dispatchId = UUID.randomUUID()
                 println("starting dispatch -- currentState --> $currentState")
-                println("History at start --> \n\t${history.joinToString("\n\t") { it.toString() }}")
                 val request: DispatchRequest
                 dispatchMutex.withLock {
                     request = buildDispatchRequest(action, dispatchId)
@@ -164,10 +165,7 @@ class DevToolsEnhancer<State: Any, Action: Any>(
                 println("Received Previous Command")
                 try {
                     val dispatchOverride = historyMutex.withLock {
-                        println("History Before --> \n\t${history.joinToString("\n\t") { it.toString() }}")
-                        history.removeAt(history.lastIndex).also {
-                            println("History After --> \n\t${history.joinToString("\n\t") { it.toString() }}")
-                        }
+                        history.removeAt(history.lastIndex)
                     }
                     __internalstateOverride[name]
                     forceStateChange(dispatchOverride.state)
@@ -254,6 +252,7 @@ class DevToolsEnhancer<State: Any, Action: Any>(
                     println("Overriding State --> ${this.toString()} --> $state")
                     this?.update { state }
                 }
+
             }
 
             private fun Action?.requireFor(command: Command): Action {

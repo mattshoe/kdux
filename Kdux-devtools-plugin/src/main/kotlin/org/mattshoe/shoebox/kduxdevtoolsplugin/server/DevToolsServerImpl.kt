@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.mattsho.shoebox.devtools.common.*
+import org.mattshoe.shoebox.kduxdevtoolsplugin.viewmodel.UserIntent
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.*
 import java.util.UUID
 
@@ -75,24 +76,40 @@ class DevToolsServerImpl : DevToolsServer {
         userCommandStream
             .onEach { command ->
                 try {
-                    val requestId = requestMap.access {
-                        it.remove(command.storeName)
-                    }
-                    if (requestId != null) {
-                        val session = storeMap.access {
-                            it[command.storeName]
+                    when (command) {
+                        is UserCommand.Pause,
+                        is UserCommand.NextDispatch -> {
+                            val requestId = requestMap.access {
+                                it.remove(command.storeName)
+                            }
+                            println("")
+                            if (requestId != null) {
+                                val session = storeMap.access {
+                                    it[command.storeName]
+                                }
+                                println("Sending Command --> $command")
+                                session?.sendMessage(
+                                    requestId,
+                                    Json.encodeToString(command.payload)
+                                ) ?: println("Dropped Command for request!")
+                            } else {
+                                storeMap.access {
+                                    it[command.storeName]
+                                }?.sendMessage(
+                                    null,
+                                    Json.encodeToString(command.payload)
+                                ) ?: println("Dropped command!!")
+                            }
                         }
-                        session?.sendMessage(
-                            requestId,
-                            Json.encodeToString(command.payload)
-                        )
-                    } else {
-                        storeMap.access {
-                            it[command.storeName]
-                        }?.sendMessage(
-                            null,
-                            Json.encodeToString(command.payload)
-                        )
+                        else -> {
+                            storeMap.access {
+                                it[command.storeName]
+                            }?.sendMessage(
+                                null,
+                                Json.encodeToString(command.payload)
+                            )
+                        }
+
                     }
                 } catch (e: Throwable) {
                     println("Error processing command --> $e")
@@ -116,12 +133,15 @@ class DevToolsServerImpl : DevToolsServer {
                         _currentStateMap.access { it[intent.storeName] }
                     )
                 )
-                is ServerIntent.PauseDebugging -> _debugState.emit(
-                    DebugState.DebuggingPaused(
-                        intent.storeName,
-                        _currentStateMap.access { it[intent.storeName] }
+                is ServerIntent.PauseDebugging -> {
+                    _debugState.emit(
+                        DebugState.DebuggingPaused(
+                            intent.storeName,
+                            _currentStateMap.access { it[intent.storeName] }
+                        )
                     )
-                )
+                    userCommandStream.emit(UserCommand.Pause(intent.storeName))
+                }
                 is ServerIntent.StopDebugging -> _debugState.emit(DebugState.NotDebugging)
             }
         }
@@ -155,19 +175,22 @@ class DevToolsServerImpl : DevToolsServer {
                         for (frame in incoming) {
                             when (frame) {
                                 is Frame.Text -> handleTextFrame(frame, sessionId)
-                                is Frame.Close -> handleFrameClose(frame, sessionId)
                                 else -> throw UnsupportedOperationException("DevTools Debug Server only supports Text Frames.")
                             }
                         }
                     } catch (ex: Throwable) {
                         this.send(Frame.Close(CloseReason(CloseReason.Codes.INTERNAL_ERROR, ex.message ?: "UNKNOWN")))
                     } finally {
-                        closeReason.await()
+                        val closeReason = closeReason.await()
+                        println("Close Reason received --> $closeReason")
                         val registration = sessionMap.access { map ->
                             map.remove(sessionId.toString())
                         }
+                        println("Closing registration for --> $registration")
                         registration?.let { reg ->
-                            storeMap.access { it.remove(reg.storeName) }
+                            val session = storeMap.access { it.remove(reg.storeName) }
+                            println("Session cleared --> $session")
+                            println("Emitting Registration Removal")
                             _registrationStream.emit(
                                 RegistrationChange(
                                     value = registration,
@@ -198,7 +221,7 @@ class DevToolsServerImpl : DevToolsServer {
     }
 
     private suspend fun WebSocketSession.register(request: ServerRequest, sessionId: UUID) {
-        val registration = Json.decodeFromString<Registration>(request.data) // Receive the incoming request as a Kotlin data class
+        val registration = Json.decodeFromString<Registration>(request.data)
 
         storeMap.update {
             it[registration.storeName] = this
@@ -217,7 +240,7 @@ class DevToolsServerImpl : DevToolsServer {
         when (currentDebugState) {
             is DebugState.NotDebugging,
             is DebugState.DebuggingPaused -> {
-                println("Not debugging, ignoring dispatch request")
+                println("Ignoring dispatch request --> $currentDebugState")
                 sendMessage(
                     id = dispatchRequest.dispatchId,
                     text = Json.encodeToString(Command("continue"))
@@ -230,7 +253,6 @@ class DevToolsServerImpl : DevToolsServer {
                     requestMap.update {
                         it[dispatchRequest.storeName] = dispatchRequest.dispatchId
                     }
-                    println("Emitting new dispatch Request!")
                     _debugState.emit(
                         DebugState.ActivelyDebugging(
                             storeName = dispatchRequest.storeName,
@@ -255,25 +277,15 @@ class DevToolsServerImpl : DevToolsServer {
         _dispatchResultStream.emit(dispatchResult)
     }
 
-    private suspend fun handleFrameClose(frame: Frame.Close, sessionId: UUID) {
-        val registration = sessionMap.access {
-            it.remove(sessionId.toString())
-        }
-        storeMap.update {
-            it.remove(registration?.storeName)
-        }
-    }
-
     private suspend fun currentState(serverRequest: ServerRequest, sessionId: UUID) {
+        println("Received Current State Report --> $serverRequest")
         val currentState = Json.decodeFromString<CurrentState>(serverRequest.data)
         _currentStateMap.access {
             it[currentState.storeName] = currentState
         }
         val currentDebugState = _debugState.value
-        if (currentDebugState is DebugState.ActivelyDebugging) {
-            _debugState.update {
-                currentDebugState.copy(currentState = currentState)
-            }
+        _debugState.update {
+            currentDebugState.updateCurrentState(currentState)
         }
     }
 
@@ -292,4 +304,12 @@ class DevToolsServerImpl : DevToolsServer {
     }
 
     private fun buildCoroutineScope() = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    private fun DebugState.updateCurrentState(currentState: CurrentState?): DebugState {
+        return if (this is DebugState.ActivelyDebugging) {
+            copy(currentState = currentState)
+        } else if (this is DebugState.DebuggingPaused) {
+            copy(currentState = currentState)
+        } else this
+    }
 }

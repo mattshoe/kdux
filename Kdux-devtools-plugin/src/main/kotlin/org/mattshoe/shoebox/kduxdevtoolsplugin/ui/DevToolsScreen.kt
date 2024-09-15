@@ -125,7 +125,6 @@ fun DebugWindow(
         viewModel.state.value is UiState.DebuggingPaused
     }
     val incomingDispatch: DispatchRequest? by viewModel.state.map {
-        println("New UiState for DebugWindow --> $it")
         when (it) {
             is UiState.Debugging -> it.dispatchRequest
             else -> null
@@ -153,29 +152,30 @@ fun DebugWindow(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.weight(1f)
             ) {
-                Spacer(Modifier.width(16.dp))
                 StepBackIcon {
                     storeName?.let {
                         viewModel.handleIntent(UserIntent.StepBack(it))
                     }
                 }
-                Spacer(Modifier.width(8.dp))
-                DividerIcon()
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(24.dp))
                 if (isDebuggingPaused) {
-                    ContinueIcon {
+                    DebugIcon {
                         storeName?.let {
                             viewModel.handleIntent(UserIntent.StartDebugging(storeName))
                         }
                     }
                 } else {
-                    DebugIcon {
-                        storeName?.let {
-                            viewModel.handleIntent(UserIntent.PauseDebugging(storeName))
+                    Disabler(
+                        isDisabled = incomingDispatch == null
+                    ) {
+                        ContinueIcon {
+                            storeName?.let {
+                                viewModel.handleIntent(UserIntent.PauseDebugging(storeName))
+                            }
                         }
                     }
                 }
-                Spacer(Modifier.width(16.dp))
+                Spacer(Modifier.width(24.dp))
                 Disabler(
                     isDisabled = incomingDispatch == null
                 ) {
@@ -216,8 +216,7 @@ fun DebugWindow(
             text = currentState?.json ?: "UNKNOWN"
         )
 
-
-
+        Spacer(Modifier.height(16.dp))
 
         SectionTitle(
             modifier = Modifier.padding(end = 4.dp),

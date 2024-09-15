@@ -77,36 +77,49 @@ class DevToolsViewModel(
     init {
         server.debugState
             .onEach { serverDebugState ->
-                println("VM received ServerDebugState --> $serverDebugState")
-                when (serverDebugState) {
-                    is DebugState.ActivelyDebugging -> _uiState.emit(
-                        UiState.Debugging(
-                            serverDebugState.storeName,
-                            serverDebugState.currentState,
-                            serverDebugState.dispatchRequest?.copy(
-                                currentState = serverDebugState.dispatchRequest.currentState.copy(
-                                    json = prettyPrintJson(serverDebugState.dispatchRequest.currentState.json)
-                                ),
-                                action = serverDebugState.dispatchRequest.action.copy(
-                                    json = prettyPrintJson(serverDebugState.dispatchRequest.action.json)
+                try {
+                    when (serverDebugState) {
+                        is DebugState.ActivelyDebugging ->  {
+                            println("VM received ServerDebugState --> $serverDebugState")
+                            val prettyState = if (serverDebugState.currentState != null) {
+                                serverDebugState.currentState.copy(
+                                    state = serverDebugState.currentState.state.copy(
+                                        json = prettyPrintJson(serverDebugState.currentState.state.json)
+                                    )
+                                )
+                            } else null
+                            _uiState.emit(
+                                UiState.Debugging(
+                                    serverDebugState.storeName,
+                                    prettyState,
+                                    serverDebugState.dispatchRequest?.copy(
+                                        action = serverDebugState.dispatchRequest.action.copy(
+                                            json = prettyPrintJson(serverDebugState.dispatchRequest.action.json)
+                                        )
+                                    )
                                 )
                             )
+                        }
+                        is DebugState.DebuggingPaused -> _uiState.emit(
+                            UiState.DebuggingPaused(
+                                serverDebugState.storeName,
+                                serverDebugState.currentState
+                            )
                         )
-                    )
-                    is DebugState.DebuggingPaused -> _uiState.emit(
-                        UiState.DebuggingPaused(
-                            serverDebugState.storeName,
-                            serverDebugState.currentState
+                        is DebugState.NotDebugging -> _uiState.emit(
+                            UiState.DebuggingStopped
                         )
-                    )
-                    is DebugState.NotDebugging -> _uiState.emit(
-                        UiState.DebuggingStopped
-                    )
+                    }
+                } catch (e: Throwable) {
+                    println("Error processing ServerDebugState! --> $e")
                 }
+            }
+            .catch {
+                println("Server debug state collection killed :( --> $it ")
             }.launchIn(coroutineScope)
 
         state.onEach {
-            println("Emitting State --> $it")
+            println("Emitted UiState --> ${it::class.simpleName}")
         }.launchIn(coroutineScope)
 
         server.dispatchResultStream
@@ -136,7 +149,7 @@ class DevToolsViewModel(
                     )
                     _dispatchStream.update {
                         try {
-                            dispatchLog.sortedBy {
+                            dispatchLog.toList().sortedBy {
                                 it.result.timestamp
                             }.reversed().take(500)
                         } catch (e: Throwable) {
@@ -156,7 +169,7 @@ class DevToolsViewModel(
                         _registeredStores.add(registrationChange.value)
                     }
                     _registrationStream.update {
-                        _registeredStores
+                        _registeredStores.toList()
                     }
                 }
             }.launchIn(coroutineScope)
@@ -185,7 +198,7 @@ class DevToolsViewModel(
                 is UserIntent.StepOver -> {
                     server.execute(
                         ServerIntent.Command(
-                            UserCommand.Continue(intent.storeName)
+                            UserCommand.NextDispatch(intent.storeName)
                         )
                     )
                     with (_uiState.value as? UiState.Debugging) {
@@ -233,7 +246,7 @@ class DevToolsViewModel(
     private fun convertToHumanReadable(isoTimestamp: String): String {
         return try {
             val instant = Instant.parse(isoTimestamp)
-            val formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS").withZone(ZoneId.systemDefault()) // Adjusts to system's local timezone
+            val formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS").withZone(ZoneId.systemDefault())
             formatter.format(instant)
         } catch (ex: Throwable) {
             println(ex)
