@@ -7,49 +7,17 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
-import org.mattsho.shoebox.devtools.common.DispatchRequest
-import org.mattsho.shoebox.devtools.common.DispatchResult
-import org.mattshoe.shoebox.kduxdevtoolsplugin.server.*
-import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.CurrentState
-import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.UserCommand
+import org.gradle.internal.impldep.org.h2.engine.User
+import org.mattshoe.shoebox.kduxdevtoolsplugin.server.DebugState
+import org.mattshoe.shoebox.kduxdevtoolsplugin.server.DevToolsServer
+import org.mattshoe.shoebox.kduxdevtoolsplugin.server.DevToolsServerImpl
+import org.mattshoe.shoebox.kduxdevtoolsplugin.server.ServerIntent
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Registration
 import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.TimeStamper
+import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.UserCommand
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-
-data class DispatchLog(
-    val result: DispatchResult
-)
-
-interface ViewModel<State: Any, UserIntent: Any> {
-    val state: Flow<State>
-    fun handleIntent(intent: UserIntent)
-    fun dispose()
-}
-
-sealed interface UiState {
-    data object DebuggingStopped: UiState
-    data class Debugging(
-        val storeName: String,
-        val currentState: CurrentState? = null,
-        val dispatchRequest: DispatchRequest? = null
-    ): UiState
-    data class DebuggingPaused(
-        val storeName: String,
-        val currentState: CurrentState? = null
-    ): UiState
-}
-
-sealed interface UserIntent {
-    data class StopDebugging(val storeName: String): UserIntent
-    data class StartDebugging(val storeName: String): UserIntent
-    data class PauseDebugging(val storeName: String): UserIntent
-    data class StepOver(val storeName: String): UserIntent
-    data class StepBack(val storeName: String): UserIntent
-    data class ReplayDispatch(val storeName: String, val dispatchId: String): UserIntent
-    data class DispatchOverride(val storeName: String, val text: String): UserIntent
-}
 
 @OptIn(ExperimentalSerializationApi::class)
 class DevToolsViewModel(
@@ -239,6 +207,12 @@ class DevToolsViewModel(
                             UserCommand.DispatchOverride(intent.storeName, Json.decodeFromString(intent.text))
                         )
                     )
+                }
+                is UserIntent.ClearLogs -> {
+                    dispatchLogMutex.withLock {
+                        dispatchLog.clear()
+                        _dispatchStream.emit(dispatchLog)
+                    }
                 }
             }
         }

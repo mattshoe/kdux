@@ -195,6 +195,21 @@ fun StepBackIcon(
 }
 
 @Composable
+fun TrashIcon(
+    modifier: Modifier = Modifier,
+    tint: Color = Colors.LightGray,
+    onClick: () -> Unit = { }
+) {
+    Icon(
+        modifier,
+        resource = "/trash_icon.svg",
+        description = "Delete all.",
+        tint = tint,
+        onClick = onClick
+    )
+}
+
+@Composable
 fun ContinueIcon(
     modifier: Modifier = Modifier,
     tint: Color = Colors.LightGray,

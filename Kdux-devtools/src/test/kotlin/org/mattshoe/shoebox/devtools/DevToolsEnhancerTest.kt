@@ -17,7 +17,7 @@ class DevToolsEnhancerTest {
 
     @Test
     fun test() = runBlocking {
-        repeat(5) { storeNumber ->
+        repeat(1) { storeNumber ->
             launch {
                 delay(storeNumber * 1000L)
                 val store = store<TestState, TestAction>(
@@ -43,8 +43,8 @@ class DevToolsEnhancerTest {
                     )
                 }
 
-                repeat (10) {
-                    delay(1000)
+                repeat (20) {
+                    delay(100)
                     store.dispatch(TestAction(1))
                 }
             }

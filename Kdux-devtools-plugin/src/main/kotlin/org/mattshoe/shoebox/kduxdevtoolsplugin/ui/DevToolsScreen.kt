@@ -4,6 +4,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
@@ -60,7 +61,9 @@ fun DevToolsScreen(
         DispatchLogList(
             selectedStore,
             dispatchLogs
-        )
+        ) {
+            viewModel.handleIntent(UserIntent.ClearLogs)
+        }
     }
 
 }
@@ -276,7 +279,8 @@ fun DebugWindow(
 @Composable
 fun DispatchLogList(
     selectedStore: String?,
-    dispatchLog: List<DispatchLog>
+    dispatchLog: List<DispatchLog>,
+    onClear: () -> Unit
 ) {
     // Store the expanded states of the items in a mutable state map
     val expandedStates = remember { mutableStateMapOf<String, Boolean>() }
@@ -284,7 +288,21 @@ fun DispatchLogList(
         selectedStore == null || it.result.storeName == selectedStore
     }
 
-    SectionTitle(title = "Dispatch History")
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        SectionTitle(
+            modifier = Modifier.weight(1f),
+            title = "Dispatch History"
+        )
+        // TODO: Get this to work. Buggy for some reason
+//        Spacer(Modifier.width(4.dp))
+//        TrashIcon {
+//            onClear()
+//        }
+//        Spacer(Modifier.width(8.dp))
+    }
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
@@ -324,6 +342,42 @@ fun DispatchLogRow(log: DispatchLog, expandedState: MutableMap<String, Boolean>)
         // Expanded section with Request and Result JSONs
         if (isExpanded) {
             Column(modifier = Modifier.padding(start = 24.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)) {
+                Spacer(Modifier.height(4.dp))
+                Row {
+                    Button(
+                        text = "Restore State",
+                        icon = {
+                            SendIcon {
+                                // TODO
+                            }
+                        }
+                    ) {
+                        // TODO
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Button(
+                        text = "Replay Action",
+                        icon = {
+                            SendIcon {
+                                // TODO
+                            }
+                        }
+                    ) {
+
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Button(
+                        text = "Replay Dispatch",
+                        icon = {
+                            SendIcon {
+                                // TODO
+                            }
+                        }
+                    ) {
+
+                    }
+                }
+                Spacer(Modifier.height(4.dp))
                 Row {
                     MonospaceText(
                         text = "Dispatch ID:",
@@ -517,7 +571,6 @@ fun SectionTitle(
 ) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
             .wrapContentHeight()
             .padding(vertical = 8.dp)
             .then(modifier),
@@ -529,7 +582,8 @@ fun SectionTitle(
             color = Color.LightGray,
             modifier = Modifier.padding(horizontal = 8.dp),
             style = MaterialTheme.typography.subtitle1,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+
         )
         Spacer(modifier = Modifier.width(4.dp))  // Space after text
         Divider(
@@ -624,6 +678,34 @@ fun Disabler(
             .gesturesDisabled(isDisabled)
     ) {
         contents()
+    }
+}
+
+@Composable
+fun Button(
+    text: String,
+    icon: (@Composable () -> Unit)? = null,
+    onClick: () -> Unit
+) {
+    Box(
+        Modifier
+            .wrapContentHeight()
+            .wrapContentWidth()
+            .border(1.5.dp, Colors.LightGray, RoundedCornerShape(6.dp))
+            .clickable {
+                onClick()
+            }
+    ) {
+        Row(
+            Modifier.padding(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            MonospaceText(text = text)
+            icon?.let {
+                Spacer(Modifier.width(6.dp))
+                icon()
+            }
+        }
     }
 }
 
