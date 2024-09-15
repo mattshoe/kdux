@@ -38,15 +38,15 @@ fun DevToolsScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val dispatchLogs: List<DispatchLog> by viewModel.dispatchStream.collectAsState(emptyList())
-    var selectedStore: String? by remember { mutableStateOf(null) }
+    var selectedStore = "TestStore0"
     Column {
         when (state) {
             is State.Stopped -> StoreNameInput(viewModel) {
-                selectedStore = it
+//                selectedStore = it
             }
             is State.Debugging, is State.Paused -> {
                 DebugWindow(selectedStore!!, viewModel) {
-                    selectedStore = null
+//                    selectedStore = null
                 }
             }
         }
@@ -98,7 +98,7 @@ fun StoreNameInput(
             }
         )
         Disabler(
-            isDisabled = !debugEnabled
+            isDisabled = false
         ) {
             DebugIcon(
                 modifier = Modifier
@@ -112,7 +112,6 @@ fun StoreNameInput(
     }
 }
 
-@OptIn(ExperimentalSerializationApi::class)
 @Composable
 fun DebugWindow(
     storeName: String,
@@ -154,9 +153,14 @@ fun DebugWindow(
                     }
                 }
                 Spacer(Modifier.width(8.dp))
-                StepOverIcon {
-                    viewModel.handleIntent(UserIntent.StepOver(storeName))
+                Disabler(
+                    isDisabled = incomingDispatch == null
+                ) {
+                    StepOverIcon {
+                        viewModel.handleIntent(UserIntent.StepOver(storeName))
+                    }
                 }
+
             }
             CloseIcon {
                 viewModel.handleIntent(UserIntent.StopDebugging(storeName))
