@@ -100,12 +100,21 @@ class DevToolsViewModel(
                                 )
                             )
                         }
-                        is DebugState.DebuggingPaused -> _uiState.emit(
-                            UiState.DebuggingPaused(
-                                serverDebugState.storeName,
-                                serverDebugState.currentState
+                        is DebugState.DebuggingPaused -> {
+                            val prettyState = if (serverDebugState.currentState != null) {
+                                serverDebugState.currentState.copy(
+                                    state = serverDebugState.currentState.state.copy(
+                                        json = prettyPrintJson(serverDebugState.currentState.state.json)
+                                    )
+                                )
+                            } else null
+                            _uiState.emit(
+                                UiState.DebuggingPaused(
+                                    serverDebugState.storeName,
+                                    prettyState
+                                )
                             )
-                        )
+                        }
                         is DebugState.NotDebugging -> _uiState.emit(
                             UiState.DebuggingStopped
                         )

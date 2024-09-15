@@ -256,8 +256,10 @@ class DevToolsServerImpl : DevToolsServer {
             it[currentState.storeName] = currentState
         }
         val currentDebugState = _debugState.value
-        _debugState.update {
-            currentDebugState.updateCurrentState(currentState)
+        if (currentDebugState.storeUnderDebug == currentState.storeName) {
+            _debugState.update {
+                currentDebugState.updateCurrentState(currentState)
+            }
         }
     }
 
@@ -284,4 +286,11 @@ class DevToolsServerImpl : DevToolsServer {
             copy(currentState = currentState)
         } else this
     }
+
+    private val DebugState.storeUnderDebug: String?
+        get() = when (this) {
+            is DebugState.NotDebugging -> null
+            is DebugState.DebuggingPaused -> this.storeName
+            is DebugState.ActivelyDebugging ->  this.storeName
+        }
 }
