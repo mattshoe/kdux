@@ -92,7 +92,7 @@ apart.
 
 #### Synchronous Dispatch and Structured Concurrency
 
-A key difference in **Kdux** is how it handles the dispatch operation. In traditional Redux, dispatching actions happens asynchronously be default, and each of its middleware/enhancers are asynchronous, which can introduce massive complexities
+A key difference in **Kdux** is how it handles the dispatch operation. In traditional Redux, dispatching actions happens asynchronously by default, and each of its middleware/enhancers are asynchronous, which can introduce massive complexities
 around
 managing race conditions and ensuring that state updates occur in a predictable order.
 
