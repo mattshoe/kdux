@@ -1,7 +1,3 @@
-
-
-<img src="media/kdux_logo.png" alt="Kdux Logo" width="300" />
-
 # **Kdux**
 
 **Kdux** is a state management library that takes a more modern and practical approach to the [Redux](https://redux.js.org/tutorials/fundamentals/part-1-overview) pattern. **Kdux** is
