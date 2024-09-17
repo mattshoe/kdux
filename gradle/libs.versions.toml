@@ -5,6 +5,8 @@ intellijPlugin = "1.17.3"
 composePlugin = "1.6.11"
 composeCompilerPlugin = "2.0.20"
 kotlinSerializationPlugin = "1.9.0"
+androidLibraryPlugin = "8.2.0"
+androidPlugin = "2.0.10-RC2"
 
 # Production Dependency Versions
 kotlinxCoroutines = "1.9.0"
@@ -47,3 +49,6 @@ intellij = { id = "org.jetbrains.intellij", version.ref = "intellijPlugin"}
 compose = { id = "org.jetbrains.compose", version.ref = "composePlugin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "composeCompilerPlugin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerializationPlugin" }
+android-library = { id = "com.android.library", version.ref = "androidLibraryPlugin" }
+android = { id = "org.jetbrains.kotlin.android", version.ref = "androidPlugin" }
+

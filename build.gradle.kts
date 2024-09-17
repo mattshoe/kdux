@@ -3,8 +3,8 @@ import org.apache.tools.ant.taskdefs.Java
 val NOTHING = "nothing"
 
 plugins {
-    id("com.android.library") version "8.2.0" apply false
-    id("org.jetbrains.kotlin.android") version "2.0.10-RC2" apply false
+    alias(libs.plugins.android) apply false
+    alias(libs.plugins.android.library) apply false
     id("maven-publish")
     signing
 }
