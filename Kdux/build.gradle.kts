@@ -5,12 +5,13 @@ plugins {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0-RC.2")
+    implementation(libs.kotlin.coroutines)
+
     testImplementation(kotlin("test"))
-    testImplementation("com.google.truth:truth:1.4.4")
-    testImplementation("app.cash.turbine:turbine:1.1.0")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0-RC.2")
-    testImplementation("io.mockk:mockk:1.13.12")
+    testImplementation(libs.test.truth)
+    testImplementation(libs.test.turbine)
+    testImplementation(libs.test.kotlin.coroutines)
+    testImplementation(libs.test.mockk)
 }
 
 val GROUP_ID: String = project.properties["group.id"].toString()

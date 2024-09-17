@@ -1,3 +1,11 @@
+![Maven Central Version](https://img.shields.io/maven-central/v/org.mattshoe.shoebox/Kdux?label=Maven%20Central)
+&nbsp;
+![JetBrains Plugin Version](https://img.shields.io/jetbrains/plugin/v/org.mattshoe.shoebox.Kdux-devtools-plugin?label=Intellij%20Plugin)
+&nbsp;
+![JetBrains Plugin Downloads](https://img.shields.io/jetbrains/plugin/d/org.mattshoe.shoebox.Kdux-devtools-plugin?label=Plugin%20Downloads)
+
+
+
 # **Kdux**
 
 **Kdux** is a state management library that takes a more modern and practical approach to the [Redux](https://redux.js.org/tutorials/fundamentals/part-1-overview) pattern. **Kdux** is
@@ -34,6 +42,7 @@ worrying about exceeding memory limits due to enormous state objects.
 - [**Kdux** and MVI](docs/kdux_mvi.md)
 - [DSL Guide](docs/dsl.md)
 - [Advanced Usage](#advanced-usage)
+    - [DevTools](docs/devtools.md)
     - [Middleware](docs/middleware.md)
     - [Enhancers](docs/enhancer.md)
     - [StoreCreator](docs/store_creator.md)
@@ -89,6 +98,36 @@ management
 and memory usage are critical, and process death can occur at any time. Below are some of the things that set **Kdux**
 apart.
 
+#### Synchronous Dispatch and Structured Concurrency
+
+A key difference in **Kdux** is how it handles the dispatch operation. In traditional Redux, dispatching actions happens asynchronously by default, and each of its middleware/enhancers are asynchronous, which can introduce massive complexities
+around
+managing race conditions and ensuring that state updates occur in a predictable order.
+
+**Kdux**, however, adheres to Kotlin’s structured concurrency model. In **Kdux**:
+
+- **Synchronous Dispatch by Default:** Dispatch operations are not asynchronous by default. When an action is
+  dispatched, it is processed sequentially and predictably within the current coroutine context. Each of its middleware
+  and enhancers also obey structured concurrency consequently. This synchronous behavior allows you to (if you wish to do so) 
+  ensure that each action is fully processed before the next one begins; eliminating race conditions and 
+  making state transitions significantly more predictable.
+- **Structured Concurrency:** **Kdux** leverages Kotlin’s structured concurrency to ensure that all state transitions
+  and side effects are managed within a defined scope. This means that dispatch operations are always predictable and
+  occur
+  within the bounds of the coroutine scope in which they are executed, simplifying resource management and reducing the
+  likelihood of memory leaks or orphaned coroutines.
+
+Benefits of Synchronous Dispatch and Structured Concurrency
+
+- **Predictability:** Since dispatch operations are synchronous and sequential, you can be confident that state
+  transitions occur in a well-defined order, making debugging and reasoning about your application’s behavior much
+  simpler.
+- **Simplified Resource Management:** Structured concurrency ensures that all side effects and state updates are
+  contained within the same coroutine scope, reducing the risk of resource leaks and making it easier to manage system
+  resources.
+- **Easier Testing:** The predictable nature of synchronous dispatch makes it easier to write tests for your state
+  management logic, as you can much more easily account for the complexities of asynchronous action processing.
+
 #### Object-Oriented
 
 **Kdux** emphasizes the use of pure functions within an object-oriented design. Unlike traditional Redux, which is
@@ -138,38 +177,6 @@ optimized independently, reducing the overhead associated with serializing and d
 - **Resource Management:** In environments like Android, where resources are constrained, segregated state management
   ensures that only the necessary parts of the state are kept in memory, avoiding unnecessary serialization of the
   entire application state.
-
-#### Synchronous Dispatch and Structured Concurrency
-
-Another key difference in **Kdux** is how it handles the dispatch operation. In traditional Redux, dispatching actions
-is
-often asynchronous, and each of its middleware/enhancers are asynchronous, which can introduce massive complexities
-around
-managing race conditions and ensuring that state updates occur in a predictable order.
-
-**Kdux**, however, adheres to Kotlin’s structured concurrency model. In **Kdux**:
-
-- **Synchronous Dispatch by Default:** Dispatch operations are not asynchronous by default. When an action is
-  dispatched, it is processed sequentially and predictably within the current coroutine context. Each of its middleware
-  and enhancers also obey structured concurrency consequently. This synchronous behavior allows you to (if you wish to do so) 
-  ensure that each action is fully processed before the next one begins; eliminating race conditions and 
-  making state transitions significantly more predictable.
-- **Structured Concurrency:** **Kdux** leverages Kotlin’s structured concurrency to ensure that all state transitions
-  and side effects are managed within a defined scope. This means that dispatch operations are always predictable and
-  occur
-  within the bounds of the coroutine scope in which they are executed, simplifying resource management and reducing the
-  likelihood of memory leaks or orphaned coroutines.
-
-Benefits of Synchronous Dispatch and Structured Concurrency
-
-- **Predictability:** Since dispatch operations are synchronous and sequential, you can be confident that state
-  transitions occur in a well-defined order, making debugging and reasoning about your application’s behavior much
-  simpler.
-- **Simplified Resource Management:** Structured concurrency ensures that all side effects and state updates are
-  contained within the same coroutine scope, reducing the risk of resource leaks and making it easier to manage system
-  resources.
-- **Easier Testing:** The predictable nature of synchronous dispatch makes it easier to write tests for your state
-  management logic, as you can much more easily account for the complexities of asynchronous action processing.
 
 #### tl;dr
 
