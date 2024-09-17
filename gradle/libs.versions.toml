@@ -14,6 +14,7 @@ kotlinxCoroutines = "1.9.0"
 kotlinSerialization = "1.7.2"
 ktor = "2.3.12"
 gson = "2.11.0"
+moshi = "1.15.1"
 
 # Test Dependency Versions
 junit = "4.13.2"
@@ -39,6 +40,7 @@ ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version.ref = "ktor" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+moshi = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
 
 # Test Dependencies
 test-kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }

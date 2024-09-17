@@ -1,6 +1,6 @@
 plugins {
     kotlin("jvm")
-    kotlin("plugin.serialization") version "1.9.0" apply true
+    alias(libs.plugins.kotlin.serialization)
 }
 
 group = "org.mattshoe.shoebox"
@@ -12,8 +12,8 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+    implementation(libs.kotlin.serialization)
+    implementation(libs.kotlin.coroutines)
 
     testImplementation(kotlin("test"))
 }
