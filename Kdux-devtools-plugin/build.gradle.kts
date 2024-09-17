@@ -8,7 +8,7 @@ plugins {
 }
 
 group = project.properties["group.id"].toString()
-val VERSION: String = project.properties["version"].toString()
+version = project.properties["pluginVersion"].toString()
 
 repositories {
   mavenCentral()
