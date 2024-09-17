@@ -16,7 +16,7 @@ data class TestState(val value: Int)
 
 val gson = Gson()
 
-@Ignore("Enable this test for manually testing the Kdux Devtools plugin")
+//@Ignore("Enable this test for manually testing the Kdux Devtools plugin")
 class DevToolsEnhancerTest {
 
     @Test

@@ -20,6 +20,8 @@ import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Registration
 
 internal class ClientDebugSessionImpl(
     id: String,
+    private val host: String,
+    private val port: Int,
     httpClient: HttpClient,
     private val coroutineScope: CoroutineScope
 ): ClientDebugSession {
@@ -36,8 +38,8 @@ internal class ClientDebugSessionImpl(
             try {
                 socket = httpClient.webSocketSession(
                     HttpMethod.Get,
-                    host = "localhost",
-                    port = 9001,
+                    host = host,
+                    port = port,
                     path = "/debug"
                 ) {
                     timeout {

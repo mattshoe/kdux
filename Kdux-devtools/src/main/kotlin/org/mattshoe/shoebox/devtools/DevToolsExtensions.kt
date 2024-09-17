@@ -1,6 +1,11 @@
 package org.mattshoe.shoebox.devtools
 
 import kdux.dsl.StoreDslMenu
+import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Defaults
+
+object KduxHost {
+    val ANDROID_EMULATOR = "10.0.2.2"
+}
 
 /**
  * DSL extension that enhances a Kdux `Store` by integrating it with an external server-based
@@ -30,6 +35,8 @@ import kdux.dsl.StoreDslMenu
  * @param Action The type representing actions that can be dispatched to the store.
  */
 inline fun <reified State : Any, Action : Any> StoreDslMenu<State, Action>.devtools(
+    host: String = Defaults.HOST,
+    port: Int = Defaults.PORT,
     noinline actionSerializer: suspend (Action) -> String,
     noinline actionDeserializer: suspend (org.mattsho.shoebox.devtools.common.Action) -> Action,
     noinline stateSerializer: suspend (State) -> String,
@@ -37,6 +44,8 @@ inline fun <reified State : Any, Action : Any> StoreDslMenu<State, Action>.devto
 ) {
     add(
         DevToolsEnhancer(
+            host,
+            port,
             actionSerializer,
             actionDeserializer,
             stateSerializer,
@@ -70,10 +79,14 @@ inline fun <reified State : Any, Action : Any> StoreDslMenu<State, Action>.devto
  * @param Action The type representing actions that can be dispatched to the store.
  */
 inline fun <reified State : Any, Action : Any> StoreDslMenu<State, Action>.devtools(
+    host: String = Defaults.HOST,
+    port: Int = Defaults.PORT,
     serializer: DevToolsSerializer<State, Action>
 ) {
     add(
         DevToolsEnhancer(
+            host,
+            port,
             serializer::serializeAction,
             serializer::deserializeAction,
             serializer::serializeState,

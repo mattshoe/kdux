@@ -21,10 +21,17 @@ test alternative scenarios without having to restart your application or manuall
 
 ## How to Use Kdux DevTools
 
-To get started with **Kdux DevTools**, you need to follow two main steps:
+To get started with **Kdux DevTools**, you need to follow just a few steps:
 
-1. **Install the Gradle Dependency** and integrate the `devtools(..)` extension function in the Kdux store.
-2. **Install the Kdux DevTools IntelliJ Plugin** to enable the debugging interface in your IDE.
+1. **Add** the Gradle Dependency
+2. **Integrate `devtools(..)`** extension function in the Kdux store.
+2. **Add** the Kdux DevTools IntelliJ IDE Plugin to enable the debugging interface.
+
+### Host and Port Customization
+In some environments, particularly Android Emulators, you may need to change the host and/or port to which the DevTools 
+messages are sent. 
+
+Kdux supports customizing the host and port however your needs require.
 
 ### 1. Install the Gradle Dependency
 
@@ -36,7 +43,11 @@ dependencies {
 }
 ```
 
-Next, apply the devtools(..) extension function to your store configuration.
+### 2. Integrate the DevTools into your Store
+
+Just apply the devtools(..) extension function to your store configuration.
+
+Be sure to use the `KduxHost.ANDROID_EMULATOR` host if you plan to run the code on an Emulator.
 
 ```kotlin
 import org.mattshoe.shoebox.devtools.DevToolsSerializer
@@ -54,15 +65,26 @@ val store = kdux.store(
     initialState = MyState(),
     reducer = MyReducer()
 ) {
-    // Add the DevTools
+    // Add the DevTools with default host (localhost) and port (9001)
     devtools(serializer)
+  
+    // Or for an android emulator, you must specify the the host as 10.0.2.2
+    devtools(
+        host = KduxHost.ANDROID_EMULATOR,
+        serializer = serializer
+    )
+  
+    // Or you may need to customize both port and host
+    devtools(
+        host = "127.7.2.42",
+        port = 4242,
+        serializer = serializer
+    )
 }
 ```
 
-In this example, the devtools(serializer) extension integrates the store with Kdux DevTools, enabling all the powerful
-debugging features.
 
-### 2. Install the Kdux DevTools IntelliJ Plugin
+### 3. Install the Kdux DevTools IntelliJ Plugin
 
 Once you've integrated the DevTools into your store, install the **Kdux DevTools IntelliJ Plugin** to enable debugging
 within the IDE. You can find the plugin on the JetBrains Marketplace or install it directly from your IntelliJ IDE.
