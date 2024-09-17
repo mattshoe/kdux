@@ -51,7 +51,6 @@ fun DevToolsScreen(
             is UiState.Debugging, is UiState.DebuggingPaused -> {
                 DebugWindow(selectedStore, viewModel) {
                     selectedStore?.let {
-                        println("Debug Close/Stop Event!! --> $it")
                         viewModel.handleIntent(UserIntent.StopDebugging(it))
                     }
                     selectedStore = null
@@ -114,7 +113,6 @@ fun StoreNameInput(
                 modifier = Modifier
                     .size(32.dp)
             ) {
-                println("Debug clicked for $storeName")
                 storeName?.let {
                     viewModel.handleIntent(UserIntent.StartDebugging(it))
                 }

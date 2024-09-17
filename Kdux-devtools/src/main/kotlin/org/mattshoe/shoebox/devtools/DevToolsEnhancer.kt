@@ -83,7 +83,6 @@ class DevToolsEnhancer<State: Any, Action: Any>(
 
                 state
                     .onEach { newState ->
-                        println("Sending New Store State -> $newState")
                         socket.send(
                             ServerRequest(
                                 null,
@@ -114,9 +113,7 @@ class DevToolsEnhancer<State: Any, Action: Any>(
 
             override suspend fun dispatch(action: Action) = coroutineScope {
                 val dispatchId = UUID.randomUUID()
-                println("starting dispatch -- currentState --> $currentState")
                 val request = buildDispatchRequest(action, dispatchId)
-                println("sending request --> $request")
                 if (bypassServerRequest === action) {
                     handleContinueCommand(action, null, dispatchId)
                 } else {
@@ -127,7 +124,6 @@ class DevToolsEnhancer<State: Any, Action: Any>(
                             data = Json.encodeToString(request)
                         )
                     )
-                    println("response received --> $response")
                     handleServerCommand(action, response, dispatchId)
                 }
 
@@ -155,7 +151,6 @@ class DevToolsEnhancer<State: Any, Action: Any>(
             }
 
             private suspend fun handleContinueCommand(action: Action?, command: Command?, dispatchId: UUID) {
-                println("Received Continue Command")
                 val actionToDispatch = action
                     ?: try {
                         actionDeserializer(
@@ -174,7 +169,6 @@ class DevToolsEnhancer<State: Any, Action: Any>(
             }
 
             private suspend fun handlePauseCommand(action: Action, dispatchId: UUID) {
-                println("Received Pause Command")
                 store.dispatch(action)
                 val dispatch = Snapshot(action, currentState)
                 historyMutex.withLock {
@@ -184,7 +178,6 @@ class DevToolsEnhancer<State: Any, Action: Any>(
             }
 
             private suspend fun handleNextCommand(action: Action, dispatchId: UUID) {
-                println("Received Next Command")
                 store.dispatch(action)
                 val dispatch = Snapshot(action, currentState)
                 historyMutex.withLock {
@@ -194,7 +187,6 @@ class DevToolsEnhancer<State: Any, Action: Any>(
             }
 
             private suspend fun handlePreviousCommand() {
-                println("Received Previous Command")
                 try {
                     val dispatchOverride = historyMutex.withLock {
                         history.removeAt(history.lastIndex)
@@ -207,7 +199,6 @@ class DevToolsEnhancer<State: Any, Action: Any>(
             }
 
             private suspend fun handleReplayCommand(command: Command) {
-                println("Received Replay Command")
                 val dispatchId = UUID.fromString(command.payload)
                 val dispatchToReplay = historyMutex.withLock {
                     dispatchMap[dispatchId]
@@ -224,7 +215,6 @@ class DevToolsEnhancer<State: Any, Action: Any>(
             }
 
             private suspend fun handleOverrideCommand(command: Command, dispatchId: UUID = UUID.randomUUID()) {
-                println("Received Override Command")
                 val actionContainer = Json.decodeFromString<org.mattsho.shoebox.devtools.common.Action>(command.payload ?: "")
                 val actionOverride = actionDeserializer(actionContainer)
 
@@ -237,7 +227,6 @@ class DevToolsEnhancer<State: Any, Action: Any>(
             }
 
             private suspend fun handleRestoreState(command: Command) {
-                println("Received Restore State Command")
                 val dispatch = Json.decodeFromString<DispatchResult>(command.payload ?: "")
                 forceStateChange(
                     stateDeserializer(dispatch.newState)
@@ -245,27 +234,21 @@ class DevToolsEnhancer<State: Any, Action: Any>(
             }
 
             private suspend fun handleReplayAction(command: Command) {
-                println("Received Replay Action Command")
                 val payload = Json.decodeFromString<DispatchResult>(command.payload ?: "")
                 val action = actionDeserializer(payload.action)
                 bypassServerRequest = action
-                println("Dispatching replay --> $action")
                 this.dispatch(action)
             }
 
             private suspend fun handleReplayDispatch(command: Command) {
-                println("Received Replay Dispatch Command")
                 val dispatch = Json.decodeFromString<DispatchResult>(command.payload ?: "")
                 transactionLock = CompletableDeferred()
                 try {
                     val stateReset = stateDeserializer(dispatch.previousState)
-                    println("Resetting State --> $stateReset")
                     forceStateChange(stateReset)
-                    println("Waiting a short time for processing to happen")
                     delay(100)
                     val action = actionDeserializer(dispatch.action)
                     bypassServerRequest = action
-                    println("Dispatching Action Replay --> $action")
                     dispatch(action)
                 } catch (e: Throwable) {
                     println("Error while executing ReplayDispatch --> $e")

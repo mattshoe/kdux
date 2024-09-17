@@ -50,23 +50,21 @@ class DevToolsServerImpl : DevToolsServer {
                             val requestId = requestMap.access {
                                 it.remove(command.storeName)
                             }
-                            println("")
                             if (requestId != null) {
                                 val session = storeMap.access {
                                     it[command.storeName]
                                 }
-                                println("Sending Command --> $command")
                                 session?.sendMessage(
                                     requestId,
                                     Json.encodeToString(command.payload)
-                                ) ?: println("Dropped Command for request!")
+                                )
                             } else {
                                 storeMap.access {
                                     it[command.storeName]
                                 }?.sendMessage(
                                     null,
                                     Json.encodeToString(command.payload)
-                                ) ?: println("Dropped command!!")
+                                )
                             }
                         }
                         else -> {
@@ -111,7 +109,6 @@ class DevToolsServerImpl : DevToolsServer {
                     userCommandStream.emit(UserCommand.Pause(intent.storeName))
                 }
                 is ServerIntent.StopDebugging -> {
-                    println("_debugState.emit(DebugState.NotDebugging)")
                     userCommandStream.emit(UserCommand.Continue(intent.storeName))
                     _debugState.emit(DebugState.NotDebugging)
                 }
@@ -153,16 +150,12 @@ class DevToolsServerImpl : DevToolsServer {
                     } catch (ex: Throwable) {
                         this.send(Frame.Close(CloseReason(CloseReason.Codes.INTERNAL_ERROR, ex.message ?: "UNKNOWN")))
                     } finally {
-                        val closeReason = closeReason.await()
-                        println("Close Reason received --> $closeReason")
+                        closeReason.await()
                         val registration = sessionMap.access { map ->
                             map.remove(sessionId.toString())
                         }
-                        println("Closing registration for --> $registration")
                         registration?.let { reg ->
-                            val session = storeMap.access { it.remove(reg.storeName) }
-                            println("Session cleared --> $session")
-                            println("Emitting Registration Removal")
+                            storeMap.access { it.remove(reg.storeName) }
                             _registrationStream.emit(
                                 RegistrationChange(
                                     value = registration,
@@ -212,7 +205,6 @@ class DevToolsServerImpl : DevToolsServer {
         when (currentDebugState) {
             is DebugState.NotDebugging,
             is DebugState.DebuggingPaused -> {
-                println("Ignoring dispatch request --> $currentDebugState")
                 sendMessage(
                     id = dispatchRequest.dispatchId,
                     text = Json.encodeToString(Command("continue"))
@@ -233,7 +225,6 @@ class DevToolsServerImpl : DevToolsServer {
                         )
                     )
                 } else {
-                    println("Wrong store, ignoring dispatch request")
                     sendMessage(
                         id = dispatchRequest.dispatchId,
                         text = Json.encodeToString(Command("continue"))
@@ -250,7 +241,6 @@ class DevToolsServerImpl : DevToolsServer {
     }
 
     private suspend fun currentState(serverRequest: ServerRequest, sessionId: UUID) {
-        println("Received Current State Report --> $serverRequest")
         val currentState = Json.decodeFromString<CurrentState>(serverRequest.data)
         _currentStateMap.access {
             it[currentState.storeName] = currentState
