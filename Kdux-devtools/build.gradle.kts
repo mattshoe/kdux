@@ -7,20 +7,20 @@ plugins {
 dependencies {
     implementation(project(":Kdux"))
     implementation(project(":Kdux-devtools-common"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2")
+    implementation(libs.kotlin.coroutines)
+    implementation(libs.kotlin.serialization)
 
-    implementation("io.ktor:ktor-client-cio:2.3.12")
-    implementation("io.ktor:ktor-client-core:2.3.12")
-    implementation("io.ktor:ktor-server-netty:2.3.12")
-    implementation("io.ktor:ktor-client-websockets:2.3.12")
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.ktor.client.websockets)
 
     testImplementation(kotlin("test"))
-    testImplementation("com.google.truth:truth:1.4.4")
-    testImplementation("app.cash.turbine:turbine:1.1.0")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
-    testImplementation("io.mockk:mockk:1.13.12")
-    testImplementation("com.google.code.gson:gson:2.11.0")
+    testImplementation(libs.test.truth)
+    testImplementation(libs.test.turbine)
+    testImplementation(libs.test.kotlin.coroutines)
+    testImplementation(libs.test.mockk)
+    testImplementation(libs.gson)
 }
 
 val GROUP_ID: String = project.properties["group.id"].toString()

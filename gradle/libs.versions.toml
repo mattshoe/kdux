@@ -1,0 +1,64 @@
+[versions]
+
+# Gradle Plugin versions
+intellijPlugin = "1.17.3"
+composePlugin = "1.6.11"
+composeCompilerPlugin = "2.0.20"
+kotlinSerializationPlugin = "1.9.0"
+androidLibraryPlugin = "8.2.0"
+androidPlugin = "2.0.10-RC2"
+kotlinParcelize = "2.0.20"
+
+# Production Dependency Versions
+kotlinxCoroutines = "1.9.0"
+kotlinSerialization = "1.7.2"
+ktor = "2.3.12"
+gson = "2.11.0"
+moshi = "1.15.1"
+
+# Test Dependency Versions
+junit = "4.13.2"
+truth = "1.4.4"
+turbine = "1.1.0"
+mockkVersion = "1.13.12"
+robolectric = "4.13"
+
+
+########################################################################################################################
+
+
+[libraries]
+
+# Producation Dependencies
+kotlin-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinSerialization"}
+kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
+ktor-server-websockets = { module = "io.ktor:ktor-server-websockets", version.ref = "ktor" }
+ktor-serialization = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version.ref = "ktor" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+moshi = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
+
+# Test Dependencies
+test-kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
+test-junit = { group = "junit", name = "junit", version.ref = "junit" }
+test-truth = { module = "com.google.truth:truth", version.ref = "truth" }
+test-turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+test-mockk = { module = "io.mockk:mockk", version.ref = "mockkVersion" }
+test-robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+
+
+########################################################################################################################
+
+
+[plugins]
+intellij = { id = "org.jetbrains.intellij", version.ref = "intellijPlugin"}
+compose = { id = "org.jetbrains.compose", version.ref = "composePlugin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "composeCompilerPlugin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerializationPlugin" }
+android-library = { id = "com.android.library", version.ref = "androidLibraryPlugin" }
+android = { id = "org.jetbrains.kotlin.android", version.ref = "androidPlugin" }
+
