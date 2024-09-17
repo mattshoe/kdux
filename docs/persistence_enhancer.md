@@ -23,6 +23,9 @@ deserializing it on initialization, thereby maintaining a consistent state acros
 
 ## Usage Example
 
+The Kdux dsl provides full support for all popular serialization libraries, including Gson, Kotlinx Serialization, Moshi,
+and more. Refer to the [Third Party Support](third_party_support.md) document for how to use them.
+
 Here’s a basic example of how to use the `PersistenceEnhancer` in a **Kdux** store:
 
 ```kotlin
@@ -33,7 +36,7 @@ val store = kdux.store(
     persist(
         key = "myGloballyUniqueKey-${userId}",
         serializer = { state, outputStream -> /* Serialize state to be written to storage */ },
-        deserializer = { inputStream -> /* Deserialize the inputStream into the proper state */ }
+        deserializer = { inputStream -> /* Deserialize the inputStream into the proper state */ },
         onError = { state, error -> /* Handle error */ }
     )
 }

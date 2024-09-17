@@ -48,7 +48,6 @@ class DevToolsViewModel(
                 try {
                     when (serverDebugState) {
                         is DebugState.ActivelyDebugging ->  {
-                            println("VM received ServerDebugState --> $serverDebugState")
                             val prettyState = if (serverDebugState.currentState != null) {
                                 serverDebugState.currentState.copy(
                                     state = serverDebugState.currentState.state.copy(
@@ -94,10 +93,6 @@ class DevToolsViewModel(
             .catch {
                 println("Server debug state collection killed :( --> $it ")
             }.launchIn(coroutineScope)
-
-        state.onEach {
-            println("Emitted UiState --> ${it::class.simpleName}")
-        }.launchIn(coroutineScope)
 
         server.dispatchResultStream
             .onEach {
@@ -238,17 +233,6 @@ class DevToolsViewModel(
     private fun prettyPrintJson(jsonText: String): String {
         val jsonObject = prettyJson.parseToJsonElement(jsonText) as JsonObject
         return prettyJson.encodeToString(JsonObject.serializer(), jsonObject)
-    }
-
-    private fun convertToHumanReadable(isoTimestamp: String): String {
-        return try {
-            val instant = Instant.parse(isoTimestamp)
-            val formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS").withZone(ZoneId.systemDefault())
-            formatter.format(instant)
-        } catch (ex: Throwable) {
-            println(ex)
-            "--"
-        }
     }
 
 }

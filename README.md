@@ -1,3 +1,11 @@
+![Maven Central Version](https://img.shields.io/maven-central/v/org.mattshoe.shoebox/Kdux?label=Maven%20Central)
+&nbsp;
+![JetBrains Plugin Version](https://img.shields.io/jetbrains/plugin/v/org.mattshoe.shoebox.Kdux-devtools-plugin?label=Intellij%20Plugin)
+&nbsp;
+![JetBrains Plugin Downloads](https://img.shields.io/jetbrains/plugin/d/org.mattshoe.shoebox.Kdux-devtools-plugin?label=Plugin%20Downloads)
+
+
+
 # **Kdux**
 
 **Kdux** is a state management library that takes a more modern and practical approach to the [Redux](https://redux.js.org/tutorials/fundamentals/part-1-overview) pattern. **Kdux** is

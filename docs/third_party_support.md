@@ -15,6 +15,7 @@ Kdux provides full integration with the Android SDK, leveraging LogCat, on-devic
 `WorkManager` integration, and all other relevant features of the Android platform.
 
 #### Dependency
+![Maven Central Version](https://img.shields.io/maven-central/v/org.mattshoe.shoebox/Kdux-android)
 
 ```kotlin
 dependencies {
@@ -45,71 +46,18 @@ val store = kdux.store(
 }
 ```
 
-### Room
-
-Kdux supports using [Room](https://developer.android.com/training/data-storage/room) for its [State Persistence](persistence_enhancer.md) functionality.
-
-#### Dependency
-```kotlin
-dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-room:1.0.10")
-}
-```
-
-#### Usage
-
-```kotlin
-val store = kdux.store(
-    initialValue = MyState(),
-    reducer = MyReducer()
-) {
-    persistWithRoom(
-        key = "myGloballyUniqueKey", 
-        dao = myDao
-    ) { state, error ->
-        // handle error
-    }
-}
-```
-
-### Realm
-
-Kdux supports using [Realm](https://github.com/realm/realm-java) for its [State Persistence](persistence_enhancer.md) functionality.
-
-#### Dependency
-```kotlin
-dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-realm:1.0.10")
-}
-```
-
-#### Usage
-
-```kotlin
-val store = kdux.store(
-    initialValue = MyState(),
-    reducer = MyReducer()
-) {
-    persistWithRealm(
-        key = "myGloballyUniqueKey", 
-        realm = { Realm.getDefaultInstance() }
-    ) { state, error ->
-        // handle error
-    }
-}
-```
-
 <br>
 <br>
 
 # Serialization
-
 
 ## Kotlinx Serialization
 
 Kdux supports [Kotlinx Serialization](https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/serialization-guide.md) for its [State Persistence](persistence_enhancer.md) functionality.  
 
 #### Dependency
+![Maven Central Version](https://img.shields.io/maven-central/v/org.mattshoe.shoebox/Kdux-kotlinx-serialization)
+
 ```kotlin
 dependencies {
     implementation("org.mattshoe.shoebox:Kdux-kotlinx-serialization:1.0.10")
@@ -136,6 +84,7 @@ val store = kdux.store(
 Kdux supports [Gson](https://github.com/google/gson) for its [State Persistence](persistence_enhancer.md) functionality.
 
 #### Dependency
+![Maven Central Version](https://img.shields.io/maven-central/v/org.mattshoe.shoebox/Kdux-gson)
 ```kotlin
 dependencies {
     implementation("org.mattshoe.shoebox:Kdux-gson:1.0.10")
@@ -157,7 +106,34 @@ val store = kdux.store(
 }
 ```
 
-## ProtoBuf
+## Moshi
+
+Kdux supports [Moshi](https://github.com/square/moshi) for its [State Persistence](persistence_enhancer.md) functionality.
+
+#### Dependency![Maven Central Version](https://img.shields.io/maven-central/v/org.mattshoe.shoebox/Kdux-moshi)
+
+```kotlin
+dependencies {
+    implementation("org.mattshoe.shoebox:Kdux-moshi:1.0.10")
+}
+```
+
+#### Usage
+
+```kotlin
+val store = kdux.store(
+    initialValue = MyState(),
+    reducer = MyReducer()
+) {
+    persistWithMoshi(
+        key = "myGloballyUniqueKey"
+    ) { state, error ->
+        // handle error
+    }
+}
+```
+
+## ProtoBuf (coming soon)
 
 Kdux supports Google's [ProtoBuf](https://github.com/square/moshi) serialization for its [State Persistence](persistence_enhancer.md) functionality.
 
@@ -183,33 +159,7 @@ val store = kdux.store(
 }
 ```
 
-## Moshi
-
-Kdux supports [Moshi](https://github.com/square/moshi) for its [State Persistence](persistence_enhancer.md) functionality.
-
-#### Dependency
-```kotlin
-dependencies {
-    implementation("org.mattshoe.shoebox:Kdux-moshi:1.0.10")
-}
-```
-
-#### Usage
-
-```kotlin
-val store = kdux.store(
-    initialValue = MyState(),
-    reducer = MyReducer()
-) {
-    persistWithMoshi(
-        key = "myGloballyUniqueKey"
-    ) { state, error ->
-        // handle error
-    }
-}
-```
-
-## Jackson
+## Jackson (coming soon)
 
 Kdux supports [Jackson](https://github.com/FasterXML/jackson-module-kotlin) serialization for its [State Persistence](persistence_enhancer.md) functionality.
 

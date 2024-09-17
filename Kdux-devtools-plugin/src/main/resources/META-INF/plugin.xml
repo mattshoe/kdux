@@ -24,15 +24,13 @@
       <li><strong>Action Replay:</strong> Instantly replay actions to see how state changes would have occurred in different conditions.</li>
       <li><strong>Dispatch Snapshot Replay:</strong> Restore the state at the beginning of any dispatch and replay its action for full time-travel simulation.</li>
       <li><strong>Real-Time Action Editing:</strong> Modify actions live while debugging to experiment with different inputs and behaviors.</li>
+      <li><strong>Seamless Integration:</strong> Kdux DevTools works directly with your Kdux-powered stores for an effortless debugging experience, enhancing your development workflow.</li>
     </ul>
-
-    <p><strong>Seamless Integration:</strong> Kdux DevTools works directly with your Kdux-powered stores for an effortless debugging experience, enhancing your development workflow.</p>
 ]]></description>
 
   <!-- Product and plugin compatibility requirements.
        Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
   <depends>com.intellij.modules.platform</depends>
-  <depends>org.jetbrains.android</depends>
 
   <!-- Extension points defined by the plugin.
        Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
