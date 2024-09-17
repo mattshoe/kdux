@@ -7,6 +7,7 @@ composeCompilerPlugin = "2.0.20"
 kotlinSerializationPlugin = "1.9.0"
 androidLibraryPlugin = "8.2.0"
 androidPlugin = "2.0.10-RC2"
+kotlinParcelize = "2.0.20"
 
 # Production Dependency Versions
 kotlinxCoroutines = "1.9.0"
@@ -19,6 +20,7 @@ junit = "4.13.2"
 truth = "1.4.4"
 turbine = "1.1.0"
 mockkVersion = "1.13.12"
+robolectric = "4.13"
 
 
 ########################################################################################################################
@@ -43,7 +45,8 @@ test-kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-te
 test-junit = { group = "junit", name = "junit", version.ref = "junit" }
 test-truth = { module = "com.google.truth:truth", version.ref = "truth" }
 test-turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
-test-mockk = { module = "io.mockk:mockk", version.ref = "mockkVersion"}
+test-mockk = { module = "io.mockk:mockk", version.ref = "mockkVersion" }
+test-robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 
 
 ########################################################################################################################
