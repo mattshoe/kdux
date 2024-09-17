@@ -1,9 +1,9 @@
 plugins {
   id("java")
-  id("org.jetbrains.intellij") version "1.17.3"
-  id("org.jetbrains.compose") version "1.6.11"
-  id("org.jetbrains.kotlin.plugin.compose") version "2.0.20"
-  kotlin("plugin.serialization") version "1.9.0" apply true
+  alias(libs.plugins.intellij)
+  alias(libs.plugins.compose)
+  alias(libs.plugins.compose.compiler)
+  alias(libs.plugins.kotlin.serialization)
   id("org.jetbrains.kotlin.jvm")
 }
 
@@ -18,12 +18,11 @@ repositories {
 dependencies {
   implementation(project(":Kdux-devtools-common"))
   implementation(compose.desktop.currentOs)
-  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2")
-  implementation("io.ktor:ktor-server-core:2.3.12")
-  implementation("io.ktor:ktor-server-netty:2.3.12")
-  implementation("io.ktor:ktor-server-websockets:2.3.12")
-  implementation("ch.qos.logback:logback-classic:1.5.6")
-  implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.12")
+  implementation(libs.kotlin.serialization)
+  implementation(libs.ktor.server.core)
+  implementation(libs.ktor.server.netty)
+  implementation(libs.ktor.server.websockets)
+  implementation(libs.ktor.serialization)
 }
 
 // Configure Gradle IntelliJ Plugin
