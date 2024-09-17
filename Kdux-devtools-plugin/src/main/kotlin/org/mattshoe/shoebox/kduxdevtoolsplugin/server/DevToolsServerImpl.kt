@@ -132,8 +132,8 @@ class DevToolsServerImpl : DevToolsServer {
     private fun buildServer(): ApplicationEngine {
         return embeddedServer(
             factory = Netty,
-            host = "localhost",
-            port = 9001
+            host = "0.0.0.0",
+            port = Defaults.PORT
         ) {
             install(WebSockets)
 

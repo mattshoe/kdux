@@ -6,6 +6,7 @@ import io.ktor.client.plugins.websocket.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import org.mattshoe.shoebox.org.mattsho.shoebox.devtools.common.Defaults
 
 internal object ServerClient {
     private val ktorClient = HttpClient {
@@ -14,9 +15,15 @@ internal object ServerClient {
     }
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    fun startSession(id: String): ClientDebugSession {
+    fun startSession(
+        id: String,
+        host: String,
+        port: Int
+    ): ClientDebugSession {
         return ClientDebugSessionImpl(
             id,
+            host,
+            port,
             ktorClient,
             coroutineScope
         )

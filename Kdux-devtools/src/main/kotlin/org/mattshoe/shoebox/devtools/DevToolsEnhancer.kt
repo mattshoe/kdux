@@ -21,7 +21,7 @@ import java.util.UUID
 
 private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-private data class Snapshot<State: Any, Action: Any>(
+private data class StoreSnapshot<State: Any, Action: Any>(
     val action: Action?,
     val state: State
 )
@@ -54,6 +54,8 @@ private data class Snapshot<State: Any, Action: Any>(
  * @param Action The type of actions that can be dispatched to the store.
  */
 class DevToolsEnhancer<State: Any, Action: Any>(
+    private val host: String,
+    private val port: Int,
     private val actionSerializer: suspend (Action) -> String,
     private val actionDeserializer: suspend (org.mattsho.shoebox.devtools.common.Action) -> Action,
     private val stateSerializer: suspend (State) -> String,
@@ -63,10 +65,9 @@ class DevToolsEnhancer<State: Any, Action: Any>(
         return object : Store<State, Action> {
 
             private val historyMutex = Mutex()
-            private val dispatchMutex = Mutex()
-            private val history = mutableListOf<Snapshot<State, Action>>()
-            private val dispatchMap = mutableMapOf<UUID, Snapshot<State, Action>>()
-            private val socket = ServerClient.startSession(name)
+            private val history = mutableListOf<StoreSnapshot<State, Action>>()
+            private val dispatchMap = mutableMapOf<UUID, StoreSnapshot<State, Action>>()
+            private val socket = ServerClient.startSession(name, host, port)
             private var transactionLock: CompletableDeferred<Unit>? = null
             private var bypassServerRequest: Action? = null
 
@@ -100,7 +101,7 @@ class DevToolsEnhancer<State: Any, Action: Any>(
                         )
                     }.launchIn(coroutineScope)
                 history.add(
-                    Snapshot(null, currentState)
+                    StoreSnapshot(null, currentState)
                 )
             }
 
@@ -161,7 +162,7 @@ class DevToolsEnhancer<State: Any, Action: Any>(
                         throw e
                     }
                 store.dispatch(actionToDispatch)
-                val dispatch = Snapshot(action, currentState)
+                val dispatch = StoreSnapshot(action, currentState)
                 historyMutex.withLock {
                     history.add(dispatch)
                     dispatchMap[dispatchId] = dispatch
@@ -170,7 +171,7 @@ class DevToolsEnhancer<State: Any, Action: Any>(
 
             private suspend fun handlePauseCommand(action: Action, dispatchId: UUID) {
                 store.dispatch(action)
-                val dispatch = Snapshot(action, currentState)
+                val dispatch = StoreSnapshot(action, currentState)
                 historyMutex.withLock {
                     history.add(dispatch)
                     dispatchMap[dispatchId] = dispatch
@@ -179,7 +180,7 @@ class DevToolsEnhancer<State: Any, Action: Any>(
 
             private suspend fun handleNextCommand(action: Action, dispatchId: UUID) {
                 store.dispatch(action)
-                val dispatch = Snapshot(action, currentState)
+                val dispatch = StoreSnapshot(action, currentState)
                 historyMutex.withLock {
                     history.add(dispatch)
                     dispatchMap[dispatchId] = dispatch
@@ -207,7 +208,7 @@ class DevToolsEnhancer<State: Any, Action: Any>(
                 dispatchToReplay?.let {
                     forceStateChange(it.state)
                 }
-                val dispatch = Snapshot<State, Action>(null, currentState)
+                val dispatch = StoreSnapshot<State, Action>(null, currentState)
                 historyMutex.withLock {
                     history.add(dispatch)
                     dispatchMap[dispatchId] = dispatch
@@ -219,7 +220,7 @@ class DevToolsEnhancer<State: Any, Action: Any>(
                 val actionOverride = actionDeserializer(actionContainer)
 
                 store.dispatch(actionOverride)
-                val dispatch = Snapshot(actionOverride, currentState)
+                val dispatch = StoreSnapshot(actionOverride, currentState)
                 historyMutex.withLock {
                     history.add(dispatch)
                     dispatchMap[dispatchId] = dispatch
