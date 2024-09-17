@@ -12,6 +12,7 @@ androidPlugin = "2.0.10-RC2"
 kotlinxCoroutines = "1.9.0"
 kotlinSerialization = "1.7.2"
 ktor = "2.3.12"
+gson = "2.11.0"
 
 # Test Dependency Versions
 junit = "4.13.2"
@@ -27,14 +28,18 @@ mockkVersion = "1.13.12"
 
 # Producation Dependencies
 kotlin-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinSerialization"}
-kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
 ktor-server-websockets = { module = "io.ktor:ktor-server-websockets", version.ref = "ktor" }
 ktor-serialization = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version.ref = "ktor" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 
 # Test Dependencies
-test-kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
+test-kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 test-junit = { group = "junit", name = "junit", version.ref = "junit" }
 test-truth = { module = "com.google.truth:truth", version.ref = "truth" }
 test-turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
