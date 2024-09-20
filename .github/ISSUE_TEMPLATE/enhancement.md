@@ -1,6 +1,6 @@
 ---
 name: Enhancement
-about: Request a feature to help us improve Kernl
+about: Request a feature to help us improve Kdux
 title: "[ENHANCEMENT] **Brief Description**"
 labels: enhancement
 assignees: mattshoe
