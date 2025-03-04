@@ -3,7 +3,6 @@ package kdux
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import kdux.tools.PerformanceData
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -13,7 +12,6 @@ import org.mattshoe.shoebox.kdux.Reducer
 import org.mattshoe.shoebox.kdux.Store
 import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class StoreDslIntegrationTest {
 
     private lateinit var store: Store<Int, TestAction>
@@ -22,6 +20,7 @@ class StoreDslIntegrationTest {
     sealed class TestAction {
         object Increment : TestAction()
         object Decrement : TestAction()
+        object Nothing : TestAction()
     }
 
     private class TestReducer : Reducer<Int, TestAction> {
@@ -29,6 +28,7 @@ class StoreDslIntegrationTest {
             return when (action) {
                 TestAction.Increment -> state + 1
                 TestAction.Decrement -> state - 1
+                TestAction.Nothing -> state
             }
         }
     }
@@ -201,6 +201,63 @@ class StoreDslIntegrationTest {
             assertThat(performanceLogs).hasSize(2)
 
             expectNoEvents()
+        }
+    }
+
+    @Test
+    fun `WHEN chainReducers is used THEN every reducer is executed`() = runTest {
+        store = store(
+            initialState = initialState,
+            reducer = chainReducers(
+                TestReducer(),
+                TestReducer(),
+                TestReducer()
+            )
+        )
+
+        store.state.test {
+            assertThat(awaitItem()).isEqualTo(0)
+
+            store.dispatch(TestAction.Increment)
+            assertThat(awaitItem()).isEqualTo(3)
+        }
+    }
+
+    @Test
+    fun `WHEN assignReducer is used THEN only one reducer is executed`() = runTest {
+        var message = ""
+        store = store(
+            initialState = initialState,
+            reducer = assignReducers(
+                TestAction.Increment::class to reducer { state, action ->
+                    message = "increment"
+                    1
+                },
+                TestAction.Decrement::class to reducer { state, action ->
+                    message = "decrement"
+                    42
+                },
+                fallback = reducer { state, action ->
+                    message = "fallback"
+                    77
+                }
+            )
+        )
+
+        store.state.test {
+            assertThat(awaitItem()).isEqualTo(0)
+
+            store.dispatch(TestAction.Increment)
+            assertThat(awaitItem()).isEqualTo(1)
+            assertThat(message).isEqualTo("increment")
+
+            store.dispatch(TestAction.Decrement)
+            assertThat(awaitItem()).isEqualTo(42)
+            assertThat(message).isEqualTo("decrement")
+
+            store.dispatch(TestAction.Nothing)
+            assertThat(awaitItem()).isEqualTo(77)
+            assertThat(message).isEqualTo("fallback")
         }
     }
 }

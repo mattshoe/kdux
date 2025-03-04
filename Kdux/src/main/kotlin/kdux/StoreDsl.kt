@@ -6,6 +6,7 @@ import org.mattshoe.shoebox.kdux.Enhancer
 import org.mattshoe.shoebox.kdux.Middleware
 import org.mattshoe.shoebox.kdux.Reducer
 import org.mattshoe.shoebox.kdux.Store
+import kotlin.reflect.KClass
 
 /**
  * Creates and configures a [Store] using a DSL.
@@ -91,6 +92,49 @@ fun <State: Any, Action: Any> reducer(
     }
 }
 
+/**
+ * A DSL utility that creates a new [Reducer] that will execute the given [reducers] sequentially, passing the updated
+ * state from one to the next. Each reducer processes the given action in order.
+ *
+ * Keep in mind that ALL of the given [reducers] will be executed for every single dispatch. These will execute in
+ * exactly the order passed into the method, so order does matter here.
+ *
+ * @param reducers The reducers to be applied in sequence.
+ * @return A single reducer that applies all provided reducers in order.
+ */
+fun <State: Any, Action: Any> chainReducers(
+    vararg reducers: Reducer<State, Action>
+): Reducer<State, Action> {
+    return object : Reducer<State, Action> {
+        override suspend fun reduce(state: State, action: Action): State {
+            return reducers.fold(state) { accState, reducer ->
+                reducer.reduce(accState, action)
+            }
+        }
+    }
+}
+
+/**
+ * A DSL utility that creates a new [Reducer] that will select only one reducer to execute, based on the action type.
+ * If no matching reducer is found, it uses the [fallback] reducer.
+ *
+ * Keep in mind that only ONE reducer will ever execute for a given action.
+ *
+ * @param assigned A list of action-type-to-reducer mappings.
+ * @param fallback The reducer to use if no matching reducer is found.
+ * @return A reducer that delegates to the appropriate reducer based on action type.
+ */
+fun <State: Any, Action: Any> assignReducers(
+    vararg assigned: Pair<KClass<out Action>, Reducer<State, Action>>,
+    fallback: Reducer<State, Action>
+): Reducer<State, Action> {
+    return object : Reducer<State, Action> {
+        override suspend fun reduce(state: State, action: Action): State {
+            val reducer: Reducer<State, Action> = assigned.firstOrNull { it.first == action::class }?.second ?: fallback
+            return reducer.reduce(state, action)
+        }
+    }
+}
 
 /**
  * A DSL utility that creates a [Middleware] from a given function. This allows you to define
